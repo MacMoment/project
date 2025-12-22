@@ -56,25 +56,25 @@ export default function StorePage() {
   return (
     <>
       {/* Hero */}
-      <section className="pt-36 pb-16 bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900">
-        <div className="max-w-6xl mx-auto px-8 sm:px-12 lg:px-16">
-          <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-5xl sm:text-6xl font-bold text-white mb-6">
+      <section className="pt-28 pb-12 bg-gradient-to-br from-[#0f0a1a] via-purple-900 to-indigo-900">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+          <div className="text-center max-w-2xl mx-auto">
+            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
               Asset Store
             </h1>
-            <p className="text-xl text-purple-200 mb-10 leading-relaxed">
+            <p className="text-lg text-purple-200 mb-8">
               Browse our collection of premium prefabricated assets for your virtual projects.
             </p>
             
             {/* Search */}
-            <div className="relative max-w-lg mx-auto">
-              <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-purple-300" size={22} />
+            <div className="relative max-w-md mx-auto">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-300" size={20} />
               <input
                 type="text"
                 placeholder="Search assets..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-14 pr-6 py-4 bg-white/10 border-2 border-white/20 rounded-2xl text-white text-lg placeholder-purple-300 focus:outline-none focus:border-white/40 focus:ring-2 focus:ring-white/20 transition-all"
+                className="w-full pl-12 pr-4 py-3.5 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300 focus:outline-none focus:border-white/40 transition-all"
               />
             </div>
           </div>
@@ -82,10 +82,10 @@ export default function StorePage() {
       </section>
 
       {/* Products */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-8 sm:px-12 lg:px-16">
+      <section className="py-12 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
           {/* Filters */}
-          <div className="mb-12">
+          <div className="mb-10">
             <CategoryFilter
               categories={categories}
               activeCategory={activeCategory}
@@ -94,34 +94,34 @@ export default function StorePage() {
           </div>
 
           {/* Product Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
 
           {filteredProducts.length === 0 && (
-            <div className="text-center py-20">
-              <p className="text-gray-500 text-xl">No products found.</p>
-              <p className="text-gray-400 mt-2">Try adjusting your search or filter.</p>
+            <div className="text-center py-16">
+              <p className="text-gray-500 text-lg">No products found.</p>
+              <p className="text-gray-400 mt-1">Try adjusting your search or filter.</p>
             </div>
           )}
         </div>
       </section>
 
       {/* Custom Order Section */}
-      <section id="custom" className="py-28 bg-white">
-        <div className="max-w-2xl mx-auto px-8 sm:px-12 lg:px-16">
-          <div className="text-center mb-14">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+      <section id="custom" className="py-20 bg-white">
+        <div className="max-w-xl mx-auto px-6 sm:px-8 lg:px-12">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-gray-900 mb-3">
               Need Something Custom?
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className="text-gray-600">
               Tell us about your project and we'll bring your vision to life.
             </p>
           </div>
 
-          <div className="bg-gray-50 rounded-3xl p-10">
+          <div className="bg-gray-50 rounded-2xl p-8">
             <CustomOrderForm />
           </div>
         </div>
@@ -130,7 +130,7 @@ export default function StorePage() {
       {/* Floating Custom Order Button */}
       <Link
         to="/store#custom"
-        className={`fixed bottom-8 right-8 z-40 px-6 py-4 bg-purple-600 text-white text-lg font-semibold rounded-2xl shadow-xl shadow-purple-500/25 hover:bg-purple-700 hover:shadow-2xl transition-all duration-300 ${
+        className={`fixed bottom-6 right-6 z-40 px-5 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold rounded-xl shadow-lg shadow-purple-500/25 hover:shadow-xl transition-all duration-300 ${
           showFloatingButton
             ? 'opacity-100 translate-y-0'
             : 'opacity-0 translate-y-4 pointer-events-none'
