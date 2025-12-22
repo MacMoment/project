@@ -4,6 +4,7 @@ import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { Select } from '../ui/Select';
 import { CheckCircle, X } from 'lucide-react';
+import { ordersApi } from '../../services/api';
 
 const projectTypes = [
   { value: '', label: 'Select project type' },
@@ -25,6 +26,8 @@ const budgetRanges = [
 
 export function CustomOrderForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const successRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [formData, setFormData] = useState({
@@ -36,13 +39,25 @@ export function CustomOrderForm() {
     budget: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitted(true);
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      await ordersApi.submitCustomOrder(formData);
+      setIsSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to submit request. Please try again.');
+      console.error('Custom order error:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleReset = () => {
     setIsSubmitted(false);
+    setError(null);
     setFormData({
       name: '',
       email: '',
@@ -120,8 +135,20 @@ export function CustomOrderForm() {
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
         />
 
-        <Button type="submit" variant="primary" size="lg" className="w-full">
-          Submit Request
+        {error && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+            {error}
+          </div>
+        )}
+
+        <Button 
+          type="submit" 
+          variant="primary" 
+          size="lg" 
+          className="w-full"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? 'Submitting...' : 'Submit Request'}
         </Button>
       </form>
 

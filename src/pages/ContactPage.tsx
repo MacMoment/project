@@ -3,9 +3,12 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Textarea } from '../components/ui/Textarea';
 import { Mail, MapPin, MessageSquare, CheckCircle } from 'lucide-react';
+import { contactApi } from '../services/api';
 
 export default function ContactPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -13,9 +16,20 @@ export default function ContactPage() {
     message: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitted(true);
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      await contactApi.submit(formData);
+      setIsSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send message. Please try again.');
+      console.error('Contact form error:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isSubmitted) {
@@ -191,8 +205,20 @@ export default function ContactPage() {
                     }
                   />
 
-                  <Button type="submit" variant="primary" size="lg" className="w-full">
-                    Send Message
+                  {error && (
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+                      {error}
+                    </div>
+                  )}
+
+                  <Button 
+                    type="submit" 
+                    variant="primary" 
+                    size="lg" 
+                    className="w-full"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Sending...' : 'Send Message'}
                   </Button>
                 </form>
               </div>
