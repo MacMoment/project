@@ -4,6 +4,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { useCartStore } from '../store/cartStore';
 import { CreditCard, User, ArrowLeft, ArrowRight, Lock } from 'lucide-react';
+import { ordersApi } from '../services/api';
 
 type Step = 'contact' | 'payment';
 
@@ -11,6 +12,8 @@ export default function CheckoutPage() {
   const navigate = useNavigate();
   const { items, getSubtotal, clearCart } = useCartStore();
   const [step, setStep] = useState<Step>('contact');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [contactData, setContactData] = useState({
     email: '',
     firstName: '',
@@ -48,13 +51,34 @@ export default function CheckoutPage() {
     setStep('payment');
   };
 
-  const handlePaymentSubmit = (e: React.FormEvent) => {
+  const handlePaymentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate payment processing
-    clearCart();
-    navigate('/order-success', {
-      state: { email: contactData.email },
-    });
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const orderItems = items.map(item => ({
+        productId: item.product.id,
+        quantity: item.quantity,
+      }));
+
+      await ordersApi.submitCheckout({
+        email: contactData.email,
+        firstName: contactData.firstName,
+        lastName: contactData.lastName,
+        items: orderItems,
+      });
+
+      clearCart();
+      navigate('/order-success', {
+        state: { email: contactData.email },
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Payment failed. Please try again.');
+      console.error('Checkout error:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -233,13 +257,20 @@ export default function CheckoutPage() {
                     Your payment information is encrypted and secure.
                   </div>
 
+                  {error && (
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+                      {error}
+                    </div>
+                  )}
+
                   <Button
                     type="submit"
                     variant="primary"
                     size="lg"
                     className="w-full"
+                    disabled={isSubmitting}
                   >
-                    Pay ${subtotal.toFixed(2)}
+                    {isSubmitting ? 'Processing...' : `Pay $${subtotal.toFixed(2)}`}
                   </Button>
                 </form>
               )}
