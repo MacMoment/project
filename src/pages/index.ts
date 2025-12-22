@@ -1,0 +1,8 @@
+export { default as HomePage } from './HomePage';
+export { default as StorePage } from './StorePage';
+export { default as PortfolioPage } from './PortfolioPage';
+export { default as ServicesPage } from './ServicesPage';
+export { default as AboutPage } from './AboutPage';
+export { default as ContactPage } from './ContactPage';
+export { default as CheckoutPage } from './CheckoutPage';
+export { default as OrderSuccessPage } from './OrderSuccessPage';
