@@ -122,3 +122,8 @@ h1, h2, h3, h4, h5, h6 {
 .animate-pulse-slow {
   animation: pulse-slow 4s ease-in-out infinite;
 }
+
+.animate-pulse-slow-delayed {
+  animation: pulse-slow 4s ease-in-out infinite;
+  animation-delay: 2s;
+}

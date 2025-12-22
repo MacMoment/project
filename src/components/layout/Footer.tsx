@@ -22,27 +22,27 @@ const footerLinks = {
 
 export function Footer() {
   return (
-    <footer className="bg-[#220735] text-white mt-auto">
-      <div className="max-w-7xl mx-auto px-8 md:px-12 lg:px-16 py-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16">
+    <footer className="bg-gray-900 text-white mt-auto">
+      <div className="max-w-6xl mx-auto px-6 md:px-8 lg:px-12 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
-          <div className="space-y-6">
-            <Link to="/" className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#F73AFF] to-[#A634FF] flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-xl">A</span>
+          <div className="space-y-4">
+            <Link to="/" className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center">
+                <span className="text-white font-bold">A</span>
               </div>
-              <span className="text-xl font-bold">Academy Studios</span>
+              <span className="text-lg font-bold">Academy Studios</span>
             </Link>
-            <p className="text-gray-400 text-sm leading-relaxed">
-              Premium prefabricated digital assets and custom services for virtual environments.
+            <p className="text-gray-400 text-sm">
+              Premium digital assets and custom services for virtual environments.
             </p>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 text-sm text-gray-400">
-                <Mail size={18} />
+            <div className="space-y-2 text-sm text-gray-400">
+              <div className="flex items-center gap-2">
+                <Mail size={14} />
                 <span>hello@academystudios.com</span>
               </div>
-              <div className="flex items-center gap-3 text-sm text-gray-400">
-                <MapPin size={18} />
+              <div className="flex items-center gap-2">
+                <MapPin size={14} />
                 <span>Virtual Studio, Internet</span>
               </div>
             </div>
@@ -50,8 +50,8 @@ export function Footer() {
 
           {/* Navigation */}
           <div>
-            <h4 className="font-bold text-lg mb-6">Navigation</h4>
-            <ul className="space-y-4">
+            <h4 className="font-semibold mb-4">Navigation</h4>
+            <ul className="space-y-2">
               {footerLinks.navigation.map((link) => (
                 <li key={link.path}>
                   <Link
@@ -67,8 +67,8 @@ export function Footer() {
 
           {/* Company */}
           <div>
-            <h4 className="font-bold text-lg mb-6">Company</h4>
-            <ul className="space-y-4">
+            <h4 className="font-semibold mb-4">Company</h4>
+            <ul className="space-y-2">
               {footerLinks.company.map((link) =>
                 link.external ? (
                   <li key={link.path}>
@@ -76,10 +76,10 @@ export function Footer() {
                       href={link.path}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-gray-400 hover:text-white transition-colors text-sm inline-flex items-center gap-1.5"
+                      className="text-gray-400 hover:text-white transition-colors text-sm inline-flex items-center gap-1"
                     >
                       {link.label}
-                      <ExternalLink size={14} />
+                      <ExternalLink size={12} />
                     </a>
                   </li>
                 ) : (
@@ -98,8 +98,8 @@ export function Footer() {
 
           {/* Legal */}
           <div>
-            <h4 className="font-bold text-lg mb-6">Legal</h4>
-            <ul className="space-y-4">
+            <h4 className="font-semibold mb-4">Legal</h4>
+            <ul className="space-y-2">
               {footerLinks.legal.map((link) => (
                 <li key={link.path}>
                   <Link
@@ -114,16 +114,16 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-white/10 mt-16 pt-10 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="border-t border-gray-800 mt-10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-gray-400 text-sm">
             © {new Date().getFullYear()} Academy Studios. All rights reserved.
           </p>
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-4 text-sm">
             <a
               href="https://discord.gg/academystudios"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-400 hover:text-white transition-colors text-sm font-medium"
+              className="text-gray-400 hover:text-white transition-colors"
             >
               Discord
             </a>
@@ -131,7 +131,7 @@ export function Footer() {
               href="https://twitter.com/academystudios"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-400 hover:text-white transition-colors text-sm font-medium"
+              className="text-gray-400 hover:text-white transition-colors"
             >
               Twitter
             </a>
@@ -139,7 +139,7 @@ export function Footer() {
               href="https://youtube.com/academystudios"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-400 hover:text-white transition-colors text-sm font-medium"
+              className="text-gray-400 hover:text-white transition-colors"
             >
               YouTube
             </a>

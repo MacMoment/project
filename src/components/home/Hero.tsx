@@ -1,34 +1,26 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 export function Hero() {
   return (
-    <section className="relative min-h-[85vh] flex items-center overflow-hidden bg-gradient-to-b from-white via-purple-50/30 to-white">
-      {/* Animated Background Shapes */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-32 left-20 w-80 h-80 bg-gradient-to-br from-[#F73AFF]/15 to-[#A634FF]/15 rounded-full blur-3xl animate-pulse-slow" />
-        <div className="absolute bottom-32 right-20 w-96 h-96 bg-gradient-to-br from-[#FFC800]/15 to-[#F73AFF]/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-br from-[#A634FF]/5 to-transparent rounded-full blur-3xl" />
-      </div>
-
-      <div className="relative w-full max-w-7xl mx-auto px-8 md:px-12 lg:px-16 py-20 md:py-28">
+    <section className="relative min-h-[80vh] flex items-center bg-gradient-to-br from-purple-50 via-white to-pink-50">
+      <div className="w-full max-w-6xl mx-auto px-6 md:px-8 lg:px-12 py-16 md:py-24">
         <div className="max-w-2xl">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/80 backdrop-blur-sm shadow-md border border-gray-100/80 mb-10">
-            <Sparkles size={18} className="text-[#F73AFF]" />
-            <span className="text-sm font-semibold text-gray-700">
-              Premium Virtual Assets
-            </span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-100 text-purple-700 text-sm font-medium mb-6">
+            ✨ Premium Virtual Assets
           </div>
 
           {/* Headline */}
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] mb-8 tracking-tight">
-            Build Your
-            <span className="block gradient-text mt-2">Virtual Dreams</span>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 leading-tight mb-6">
+            Build Your{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
+              Virtual Dreams
+            </span>
           </h1>
 
           {/* Subtitle */}
-          <p className="text-lg md:text-xl text-gray-600 leading-relaxed mb-12 max-w-lg">
+          <p className="text-lg text-gray-600 mb-8 max-w-lg">
             Premium prefabricated digital assets and custom services for virtual environments. Transform your vision into reality.
           </p>
 
@@ -36,32 +28,32 @@ export function Hero() {
           <div className="flex flex-wrap items-center gap-4">
             <Link 
               to="/store" 
-              className="inline-flex items-center gap-2.5 px-8 py-4 bg-gradient-to-r from-[#F73AFF] to-[#A634FF] text-white font-semibold rounded-2xl shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40 hover:-translate-y-0.5 transition-all duration-200"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors"
             >
               Explore Store
-              <ArrowRight size={20} />
+              <ArrowRight size={18} />
             </Link>
             <Link 
               to="/services"
-              className="inline-flex items-center px-8 py-4 bg-white text-gray-800 font-semibold rounded-2xl border-2 border-gray-200 hover:border-[#F73AFF] hover:text-[#F73AFF] transition-all duration-200"
+              className="inline-flex items-center px-6 py-3 text-gray-700 font-medium rounded-lg border border-gray-300 hover:border-gray-400 transition-colors"
             >
               Custom Order
             </Link>
           </div>
 
           {/* Stats */}
-          <div className="flex flex-wrap items-center gap-10 md:gap-16 mt-20 pt-10 border-t border-gray-200/60">
+          <div className="flex items-center gap-8 mt-12 pt-8 border-t border-gray-200">
             <div>
-              <p className="text-4xl font-bold text-gray-900">500+</p>
-              <p className="text-sm text-gray-500 mt-2 font-medium">Assets Created</p>
+              <p className="text-3xl font-bold text-gray-900">500+</p>
+              <p className="text-sm text-gray-500">Assets Created</p>
             </div>
             <div>
-              <p className="text-4xl font-bold text-gray-900">200+</p>
-              <p className="text-sm text-gray-500 mt-2 font-medium">Happy Clients</p>
+              <p className="text-3xl font-bold text-gray-900">200+</p>
+              <p className="text-sm text-gray-500">Happy Clients</p>
             </div>
             <div>
-              <p className="text-4xl font-bold text-gray-900">4.9</p>
-              <p className="text-sm text-gray-500 mt-2 font-medium">Average Rating</p>
+              <p className="text-3xl font-bold text-gray-900">4.9</p>
+              <p className="text-sm text-gray-500">Average Rating</p>
             </div>
           </div>
         </div>
