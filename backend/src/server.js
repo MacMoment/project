@@ -55,15 +55,23 @@ app.use((err, req, res, next) => {
   });
 });
 
+// Helper function to truncate and pad strings for console output
+const formatForBox = (str, maxLen) => {
+  if (str.length > maxLen) {
+    return str.slice(0, maxLen - 3) + '...';
+  }
+  return str.padEnd(maxLen);
+};
+
 // Start server
 app.listen(config.port, () => {
   console.log(`
 ╔════════════════════════════════════════════════════════════════╗
 ║          Academy Studios Backend API                           ║
 ╠════════════════════════════════════════════════════════════════╣
-║  Server running on port ${config.port}                                  ║
-║  Environment: ${config.nodeEnv.padEnd(44)}║
-║  CORS origin: ${config.corsOrigin.padEnd(44)}║
+║  Server running on port ${String(config.port).padEnd(37)}║
+║  Environment: ${formatForBox(config.nodeEnv, 44)}║
+║  CORS origin: ${formatForBox(config.corsOrigin, 44)}║
 ╚════════════════════════════════════════════════════════════════╝
 
 Available endpoints:

@@ -1,5 +1,16 @@
+import type { Product, Category, PortfolioItem, TeamMember, Testimonial } from '../types';
+
 // API Configuration
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+
+// API Response types
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  total?: number;
+  message?: string;
+  error?: string;
+}
 
 // Generic fetch wrapper with error handling
 async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -34,20 +45,20 @@ export const productsApi = {
     if (params?.search) searchParams.set('search', params.search);
     if (params?.featured) searchParams.set('featured', 'true');
     const query = searchParams.toString();
-    return apiFetch<{ success: boolean; data: unknown[]; total: number }>(
+    return apiFetch<ApiResponse<Product[]>>(
       `/products${query ? `?${query}` : ''}`
     );
   },
 
   getById: (id: string) => {
-    return apiFetch<{ success: boolean; data: unknown }>(`/products/${id}`);
+    return apiFetch<ApiResponse<Product>>(`/products/${id}`);
   },
 };
 
 // Categories API
 export const categoriesApi = {
   getAll: () => {
-    return apiFetch<{ success: boolean; data: unknown[] }>('/categories');
+    return apiFetch<ApiResponse<Category[]>>('/categories');
   },
 };
 
@@ -55,21 +66,21 @@ export const categoriesApi = {
 export const portfolioApi = {
   getAll: (category?: string) => {
     const query = category && category !== 'all' ? `?category=${category}` : '';
-    return apiFetch<{ success: boolean; data: unknown[] }>(`/portfolio${query}`);
+    return apiFetch<ApiResponse<PortfolioItem[]>>(`/portfolio${query}`);
   },
 };
 
 // Team API
 export const teamApi = {
   getAll: () => {
-    return apiFetch<{ success: boolean; data: unknown[] }>('/team');
+    return apiFetch<ApiResponse<TeamMember[]>>('/team');
   },
 };
 
 // Testimonials API
 export const testimonialsApi = {
   getAll: () => {
-    return apiFetch<{ success: boolean; data: unknown[] }>('/testimonials');
+    return apiFetch<ApiResponse<Testimonial[]>>('/testimonials');
   },
 };
 
