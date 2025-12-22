@@ -23,12 +23,12 @@ const footerLinks = {
 export function Footer() {
   return (
     <footer className="bg-[#220735] text-white mt-auto">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+      <div className="max-w-7xl mx-auto px-8 md:px-12 lg:px-16 py-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16">
           {/* Brand */}
-          <div className="space-y-4">
+          <div className="space-y-6">
             <Link to="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F73AFF] to-[#A634FF] flex items-center justify-center">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#F73AFF] to-[#A634FF] flex items-center justify-center shadow-lg">
                 <span className="text-white font-bold text-xl">A</span>
               </div>
               <span className="text-xl font-bold">Academy Studios</span>
@@ -36,20 +36,22 @@ export function Footer() {
             <p className="text-gray-400 text-sm leading-relaxed">
               Premium prefabricated digital assets and custom services for virtual environments.
             </p>
-            <div className="flex items-center gap-2 text-sm text-gray-400">
-              <Mail size={16} />
-              <span>hello@academystudios.com</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-gray-400">
-              <MapPin size={16} />
-              <span>Virtual Studio, Internet</span>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 text-sm text-gray-400">
+                <Mail size={18} />
+                <span>hello@academystudios.com</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm text-gray-400">
+                <MapPin size={18} />
+                <span>Virtual Studio, Internet</span>
+              </div>
             </div>
           </div>
 
           {/* Navigation */}
           <div>
-            <h4 className="font-semibold mb-4">Navigation</h4>
-            <ul className="space-y-3">
+            <h4 className="font-bold text-lg mb-6">Navigation</h4>
+            <ul className="space-y-4">
               {footerLinks.navigation.map((link) => (
                 <li key={link.path}>
                   <Link
@@ -65,8 +67,8 @@ export function Footer() {
 
           {/* Company */}
           <div>
-            <h4 className="font-semibold mb-4">Company</h4>
-            <ul className="space-y-3">
+            <h4 className="font-bold text-lg mb-6">Company</h4>
+            <ul className="space-y-4">
               {footerLinks.company.map((link) =>
                 link.external ? (
                   <li key={link.path}>
@@ -74,10 +76,10 @@ export function Footer() {
                       href={link.path}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-gray-400 hover:text-white transition-colors text-sm inline-flex items-center gap-1"
+                      className="text-gray-400 hover:text-white transition-colors text-sm inline-flex items-center gap-1.5"
                     >
                       {link.label}
-                      <ExternalLink size={12} />
+                      <ExternalLink size={14} />
                     </a>
                   </li>
                 ) : (
@@ -96,8 +98,8 @@ export function Footer() {
 
           {/* Legal */}
           <div>
-            <h4 className="font-semibold mb-4">Legal</h4>
-            <ul className="space-y-3">
+            <h4 className="font-bold text-lg mb-6">Legal</h4>
+            <ul className="space-y-4">
               {footerLinks.legal.map((link) => (
                 <li key={link.path}>
                   <Link
@@ -112,16 +114,16 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-white/10 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="border-t border-white/10 mt-16 pt-10 flex flex-col md:flex-row justify-between items-center gap-6">
           <p className="text-gray-400 text-sm">
             © {new Date().getFullYear()} Academy Studios. All rights reserved.
           </p>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-8">
             <a
               href="https://discord.gg/academystudios"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-400 hover:text-white transition-colors"
+              className="text-gray-400 hover:text-white transition-colors text-sm font-medium"
             >
               Discord
             </a>
@@ -129,7 +131,7 @@ export function Footer() {
               href="https://twitter.com/academystudios"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-400 hover:text-white transition-colors"
+              className="text-gray-400 hover:text-white transition-colors text-sm font-medium"
             >
               Twitter
             </a>
@@ -137,7 +139,7 @@ export function Footer() {
               href="https://youtube.com/academystudios"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-400 hover:text-white transition-colors"
+              className="text-gray-400 hover:text-white transition-colors text-sm font-medium"
             >
               YouTube
             </a>

@@ -36,15 +36,15 @@ export function Navbar() {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? 'bg-white/90 backdrop-blur-lg shadow-sm'
-          : 'bg-transparent'
+          ? 'bg-white/95 backdrop-blur-xl shadow-md'
+          : 'bg-white/50 backdrop-blur-sm'
       }`}
     >
-      <nav className="max-w-7xl mx-auto px-6 lg:px-8">
+      <nav className="max-w-7xl mx-auto px-8 md:px-12 lg:px-16">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3" onClick={closeMobileMenu}>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F73AFF] to-[#A634FF] flex items-center justify-center">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#F73AFF] to-[#A634FF] flex items-center justify-center shadow-lg shadow-purple-500/20">
               <span className="text-white font-bold text-xl">A</span>
             </div>
             <span className="text-xl font-bold gradient-text hidden sm:block">
