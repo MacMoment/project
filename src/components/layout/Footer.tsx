@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Mail, MapPin, ExternalLink } from 'lucide-react';
+import { Mail, MapPin, ExternalLink, ArrowRight } from 'lucide-react';
 
 const footerLinks = {
   navigation: [
@@ -20,29 +20,61 @@ const footerLinks = {
   ],
 };
 
+const socialLinks = [
+  { label: 'Discord', url: 'https://discord.gg/academystudios' },
+  { label: 'Twitter', url: 'https://twitter.com/academystudios' },
+  { label: 'YouTube', url: 'https://youtube.com/academystudios' },
+];
+
 export function Footer() {
   return (
     <footer className="bg-gray-900 text-white mt-auto">
-      <div className="max-w-6xl mx-auto px-6 md:px-8 lg:px-12 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      {/* Newsletter Section */}
+      <div className="border-b border-gray-800">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 xl:px-16 py-12 lg:py-16">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            <div>
+              <h3 className="text-2xl lg:text-3xl font-bold mb-3">Stay Updated</h3>
+              <p className="text-gray-400 text-lg">
+                Get notified about new assets, updates, and exclusive offers.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="flex-1 px-5 py-3.5 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+              />
+              <button className="px-6 py-3.5 bg-purple-600 text-white font-semibold rounded-xl hover:bg-purple-700 transition-all flex items-center justify-center gap-2 whitespace-nowrap">
+                Subscribe
+                <ArrowRight size={18} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Footer */}
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 xl:px-16 py-12 lg:py-16">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 lg:gap-12">
           {/* Brand */}
-          <div className="space-y-4">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center">
-                <span className="text-white font-bold">A</span>
+          <div className="col-span-2 lg:col-span-2">
+            <Link to="/" className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-purple-600 flex items-center justify-center">
+                <span className="text-white font-bold text-xl">A</span>
               </div>
-              <span className="text-lg font-bold">Academy Studios</span>
+              <span className="text-xl font-bold">Academy Studios</span>
             </Link>
-            <p className="text-gray-400 text-sm">
-              Premium digital assets and custom services for virtual environments.
+            <p className="text-gray-400 leading-relaxed mb-6 max-w-sm">
+              Premium prefabricated digital assets and custom services for virtual environments.
             </p>
-            <div className="space-y-2 text-sm text-gray-400">
-              <div className="flex items-center gap-2">
-                <Mail size={14} />
+            <div className="space-y-3">
+              <a href="mailto:hello@academystudios.com" className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors">
+                <Mail size={18} />
                 <span>hello@academystudios.com</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin size={14} />
+              </a>
+              <div className="flex items-center gap-3 text-gray-400">
+                <MapPin size={18} />
                 <span>Virtual Studio, Internet</span>
               </div>
             </div>
@@ -50,13 +82,13 @@ export function Footer() {
 
           {/* Navigation */}
           <div>
-            <h4 className="font-semibold mb-4">Navigation</h4>
-            <ul className="space-y-2">
+            <h4 className="font-semibold text-lg mb-4">Navigation</h4>
+            <ul className="space-y-3">
               {footerLinks.navigation.map((link) => (
                 <li key={link.path}>
                   <Link
                     to={link.path}
-                    className="text-gray-400 hover:text-white transition-colors text-sm"
+                    className="text-gray-400 hover:text-white transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -67,8 +99,8 @@ export function Footer() {
 
           {/* Company */}
           <div>
-            <h4 className="font-semibold mb-4">Company</h4>
-            <ul className="space-y-2">
+            <h4 className="font-semibold text-lg mb-4">Company</h4>
+            <ul className="space-y-3">
               {footerLinks.company.map((link) =>
                 link.external ? (
                   <li key={link.path}>
@@ -76,17 +108,17 @@ export function Footer() {
                       href={link.path}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-gray-400 hover:text-white transition-colors text-sm inline-flex items-center gap-1"
+                      className="text-gray-400 hover:text-white transition-colors inline-flex items-center gap-1.5"
                     >
                       {link.label}
-                      <ExternalLink size={12} />
+                      <ExternalLink size={14} />
                     </a>
                   </li>
                 ) : (
                   <li key={link.path}>
                     <Link
                       to={link.path}
-                      className="text-gray-400 hover:text-white transition-colors text-sm"
+                      className="text-gray-400 hover:text-white transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -98,13 +130,13 @@ export function Footer() {
 
           {/* Legal */}
           <div>
-            <h4 className="font-semibold mb-4">Legal</h4>
-            <ul className="space-y-2">
+            <h4 className="font-semibold text-lg mb-4">Legal</h4>
+            <ul className="space-y-3">
               {footerLinks.legal.map((link) => (
                 <li key={link.path}>
                   <Link
                     to={link.path}
-                    className="text-gray-400 hover:text-white transition-colors text-sm"
+                    className="text-gray-400 hover:text-white transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -113,36 +145,28 @@ export function Footer() {
             </ul>
           </div>
         </div>
+      </div>
 
-        <div className="border-t border-gray-800 mt-10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-gray-400 text-sm">
-            © {new Date().getFullYear()} Academy Studios. All rights reserved.
-          </p>
-          <div className="flex items-center gap-4 text-sm">
-            <a
-              href="https://discord.gg/academystudios"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              Discord
-            </a>
-            <a
-              href="https://twitter.com/academystudios"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              Twitter
-            </a>
-            <a
-              href="https://youtube.com/academystudios"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              YouTube
-            </a>
+      {/* Bottom Bar */}
+      <div className="border-t border-gray-800">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 xl:px-16 py-6">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p className="text-gray-500 text-sm">
+              © {new Date().getFullYear()} Academy Studios. All rights reserved.
+            </p>
+            <div className="flex items-center gap-6">
+              {socialLinks.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-500 hover:text-white transition-colors text-sm font-medium"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
           </div>
         </div>
       </div>

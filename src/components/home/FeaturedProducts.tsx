@@ -7,29 +7,40 @@ export function FeaturedProducts() {
   const featured = products.filter((p) => p.featured).slice(0, 3);
 
   return (
-    <section className="py-20 md:py-28 bg-white">
-      <div className="max-w-6xl mx-auto px-6 md:px-8 lg:px-12">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
-          <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-              Featured Assets
+    <section className="py-24 lg:py-32 bg-white">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 xl:px-16">
+        {/* Section Header */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-12 lg:mb-16">
+          <div className="max-w-2xl">
+            <span className="inline-block px-4 py-2 rounded-full bg-purple-100 text-purple-700 text-sm font-semibold mb-4">
+              Featured Collection
+            </span>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              Popular Assets
             </h2>
-            <p className="text-gray-600">
-              Our most popular premium digital assets
+            <p className="text-lg text-gray-600 leading-relaxed">
+              Discover our most loved premium digital assets, curated and ready to transform your projects.
             </p>
           </div>
           <Link 
             to="/store" 
-            className="inline-flex items-center gap-1.5 text-purple-600 font-medium hover:text-purple-700"
+            className="group inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white font-semibold rounded-xl hover:bg-gray-800 transition-all whitespace-nowrap"
           >
-            View All
-            <ArrowRight size={16} />
+            View All Assets
+            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {featured.map((product) => (
-            <ProductCard key={product.id} product={product} />
+        {/* Products Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {featured.map((product, index) => (
+            <div 
+              key={product.id} 
+              className={`animate-fade-in-up stagger-${index + 1}`}
+              style={{ opacity: 0, animationFillMode: 'forwards' }}
+            >
+              <ProductCard product={product} />
+            </div>
           ))}
         </div>
       </div>
