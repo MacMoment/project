@@ -25,11 +25,11 @@ export function Navbar() {
   const location = useLocation();
   
   const hasDarkHero = darkHeroPages.includes(location.pathname);
-  const showDarkStyles = hasDarkHero && !isScrolled;
+  const isDarkMode = hasDarkHero && !isScrolled;
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      setIsScrolled(window.scrollY > 50);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -43,41 +43,41 @@ export function Navbar() {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? 'bg-white shadow-lg shadow-black/5'
+          ? 'bg-white shadow-sm'
           : hasDarkHero 
             ? 'bg-transparent' 
             : 'bg-white'
       }`}
     >
-      <nav className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 xl:px-16">
-        <div className="flex items-center justify-between h-20">
+      <nav className="max-w-5xl mx-auto px-6">
+        <div className="flex items-center justify-between h-14">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3" onClick={closeMobileMenu}>
-            <div className="w-10 h-10 rounded-xl bg-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/30">
-              <span className="text-white font-bold text-xl">A</span>
+          <Link to="/" className="flex items-center gap-2" onClick={closeMobileMenu}>
+            <div className="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center">
+              <span className="text-white font-bold">A</span>
             </div>
-            <span className={`text-xl font-bold hidden sm:block transition-colors ${
-              showDarkStyles ? 'text-white' : 'text-gray-900'
+            <span className={`text-base font-bold hidden sm:block transition-colors ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
             }`}>
               Academy Studios
             </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-1">
+          <div className="hidden lg:flex items-center gap-5">
             {navLinks.map((link) => (
               <NavLink
                 key={link.path}
                 to={link.path}
                 className={({ isActive }) =>
-                  `px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  `text-sm font-medium transition-colors ${
                     isActive
-                      ? showDarkStyles 
-                        ? 'text-white bg-white/20'
-                        : 'text-purple-600 bg-purple-50'
-                      : showDarkStyles
-                        ? 'text-white/80 hover:text-white hover:bg-white/10'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                      ? isDarkMode 
+                        ? 'text-white'
+                        : 'text-purple-600'
+                      : isDarkMode
+                        ? 'text-gray-300 hover:text-white'
+                        : 'text-gray-600 hover:text-gray-900'
                   }`
                 }
               >
@@ -92,29 +92,29 @@ export function Navbar() {
               href="https://buildersacademy.com"
               target="_blank"
               rel="noopener noreferrer"
-              className={`hidden md:flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                showDarkStyles 
-                  ? 'text-white/80 hover:text-white hover:bg-white/10'
-                  : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50'
+              className={`hidden md:flex items-center gap-1 text-sm font-medium transition-colors ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:text-white'
+                  : 'text-gray-600 hover:text-purple-600'
               }`}
             >
               Builders Academy
-              <ExternalLink size={14} />
+              <ExternalLink size={12} />
             </a>
 
             {/* Cart Button */}
             <button
               onClick={toggleCart}
-              className={`relative p-2.5 rounded-xl transition-all ${
-                showDarkStyles 
+              className={`relative p-2 rounded-lg transition-colors ${
+                isDarkMode 
                   ? 'hover:bg-white/10' 
                   : 'hover:bg-gray-100'
               }`}
               aria-label="Shopping cart"
             >
-              <ShoppingCart size={22} className={showDarkStyles ? 'text-white' : 'text-gray-700'} />
+              <ShoppingCart size={18} className={isDarkMode ? 'text-white' : 'text-gray-700'} />
               {itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-purple-600 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-purple-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                   {itemCount > MAX_CART_DISPLAY_COUNT ? `${MAX_CART_DISPLAY_COUNT}+` : itemCount}
                 </span>
               )}
@@ -123,17 +123,17 @@ export function Navbar() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className={`lg:hidden p-2.5 rounded-xl transition-all ${
-                showDarkStyles 
+              className={`lg:hidden p-2 rounded-lg transition-colors ${
+                isDarkMode 
                   ? 'hover:bg-white/10' 
                   : 'hover:bg-gray-100'
               }`}
               aria-label="Toggle menu"
             >
               {isMobileMenuOpen ? (
-                <X size={22} className={showDarkStyles ? 'text-white' : 'text-gray-700'} />
+                <X size={18} className={isDarkMode ? 'text-white' : 'text-gray-700'} />
               ) : (
-                <Menu size={22} className={showDarkStyles ? 'text-white' : 'text-gray-700'} />
+                <Menu size={18} className={isDarkMode ? 'text-white' : 'text-gray-700'} />
               )}
             </button>
           </div>
@@ -142,47 +142,45 @@ export function Navbar() {
 
       {/* Mobile Menu */}
       <div
-        className={`lg:hidden fixed inset-0 top-20 z-40 transition-all duration-300 ${
+        className={`lg:hidden fixed inset-0 top-14 z-40 transition-all duration-200 ${
           isMobileMenuOpen
             ? 'opacity-100 pointer-events-auto'
             : 'opacity-0 pointer-events-none'
         }`}
       >
         <div
-          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+          className="absolute inset-0 bg-black/20"
           onClick={closeMobileMenu}
         />
         <div
-          className={`absolute top-0 right-0 w-72 h-full bg-white shadow-2xl transform transition-transform duration-300 ${
+          className={`absolute top-0 right-0 w-56 h-full bg-white shadow-lg transform transition-transform duration-200 ${
             isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
         >
-          <div className="p-6 space-y-2">
+          <div className="p-4 space-y-3">
             {navLinks.map((link) => (
               <NavLink
                 key={link.path}
                 to={link.path}
                 onClick={closeMobileMenu}
                 className={({ isActive }) =>
-                  `block px-4 py-3 rounded-xl text-base font-medium transition-all ${
-                    isActive 
-                      ? 'text-purple-600 bg-purple-50' 
-                      : 'text-gray-700 hover:bg-gray-100'
+                  `block text-sm font-medium ${
+                    isActive ? 'text-purple-600' : 'text-gray-700'
                   }`
                 }
               >
                 {link.label}
               </NavLink>
             ))}
-            <hr className="my-4 border-gray-100" />
+            <hr className="border-gray-100" />
             <a
               href="https://buildersacademy.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-3 text-gray-600 text-sm rounded-xl hover:bg-gray-100 transition-all"
+              className="flex items-center gap-1 text-gray-600 text-sm"
             >
               Builders Academy
-              <ExternalLink size={14} />
+              <ExternalLink size={12} />
             </a>
           </div>
         </div>
