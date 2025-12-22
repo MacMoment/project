@@ -91,9 +91,10 @@ export function ProductCard({ product }: ProductCardProps) {
           <button
             onClick={handleAddToCart}
             className="flex items-center gap-1.5 px-4 py-2.5 bg-purple-600 text-white text-sm font-medium rounded-xl hover:bg-purple-700 transition-colors"
+            aria-label={`Add ${product.name} to cart`}
           >
             <ShoppingCart size={16} />
-            <span>Add</span>
+            <span>Add to Cart</span>
           </button>
         </div>
       </div>

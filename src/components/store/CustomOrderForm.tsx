@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
@@ -25,6 +25,8 @@ const budgetRanges = [
 
 export function CustomOrderForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const successRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -50,6 +52,13 @@ export function CustomOrderForm() {
       budget: '',
     });
   };
+
+  // Focus management for accessibility
+  useEffect(() => {
+    if (isSubmitted && closeButtonRef.current) {
+      closeButtonRef.current.focus();
+    }
+  }, [isSubmitted]);
 
   return (
     <div className="relative">
@@ -118,20 +127,29 @@ export function CustomOrderForm() {
 
       {/* Success Overlay */}
       {isSubmitted && (
-        <div className="absolute inset-0 bg-white rounded-2xl flex flex-col items-center justify-center text-center p-6 animate-fade-in">
+        <div 
+          ref={successRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="success-title"
+          aria-describedby="success-description"
+          className="absolute inset-0 bg-white rounded-2xl flex flex-col items-center justify-center text-center p-6 animate-fade-in"
+        >
           <button 
+            ref={closeButtonRef}
             onClick={handleReset}
             className="absolute top-4 right-4 p-1 text-gray-400 hover:text-gray-600 transition-colors"
+            aria-label="Close success message"
           >
             <X size={20} />
           </button>
-          <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mb-4">
+          <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mb-4" aria-hidden="true">
             <CheckCircle size={28} className="text-green-500" />
           </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2">
+          <h3 id="success-title" className="text-xl font-bold text-gray-900 mb-2">
             Request Submitted!
           </h3>
-          <p className="text-gray-600 text-sm max-w-xs mb-6">
+          <p id="success-description" className="text-gray-600 text-sm max-w-xs mb-6">
             Thank you for your interest! We'll review your request and get back to you within 24-48 hours.
           </p>
           <Button

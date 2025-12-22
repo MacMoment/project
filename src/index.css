@@ -97,6 +97,15 @@ a:focus-visible {
   animation: float 8s ease-in-out infinite;
 }
 
+/* Animation delay utilities */
+.animate-delay-1 {
+  animation-delay: 1s;
+}
+
+.animate-delay-2 {
+  animation-delay: 2s;
+}
+
 /* Animated underline for nav links */
 .nav-link {
   position: relative;

@@ -13,8 +13,8 @@ export function Hero() {
         
         {/* Floating cards - 3D depth effect */}
         <div className="hidden lg:block absolute top-32 right-[8%] w-48 h-32 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl border border-white/10 backdrop-blur-sm animate-float shadow-2xl" />
-        <div className="hidden lg:block absolute top-48 right-[18%] w-56 h-36 bg-gradient-to-br from-pink-500/20 to-yellow-500/20 rounded-2xl border border-white/10 backdrop-blur-sm animate-float-reverse shadow-2xl" style={{ animationDelay: '1s' }} />
-        <div className="hidden lg:block absolute top-72 right-[5%] w-40 h-28 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl border border-white/10 backdrop-blur-sm animate-float-slow shadow-2xl" style={{ animationDelay: '2s' }} />
+        <div className="hidden lg:block absolute top-48 right-[18%] w-56 h-36 bg-gradient-to-br from-pink-500/20 to-yellow-500/20 rounded-2xl border border-white/10 backdrop-blur-sm animate-float-reverse animate-delay-1 shadow-2xl" />
+        <div className="hidden lg:block absolute top-72 right-[5%] w-40 h-28 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl border border-white/10 backdrop-blur-sm animate-float-slow animate-delay-2 shadow-2xl" />
       </div>
 
       {/* Content */}
