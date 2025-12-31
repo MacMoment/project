@@ -6,3 +6,4 @@ export { default as AboutPage } from './AboutPage';
 export { default as ContactPage } from './ContactPage';
 export { default as CheckoutPage } from './CheckoutPage';
 export { default as OrderSuccessPage } from './OrderSuccessPage';
+export { default as AdminPanelPage } from './AdminPanelPage';
