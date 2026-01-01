@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ProductCard, CategoryFilter, CustomOrderForm } from '../components/store';
-import { products, categories } from '../data';
+import { useAdminStore } from '../store/adminStore';
 import { Search } from 'lucide-react';
 
 export default function StorePage() {
+  const { products, categories } = useAdminStore();
   const [activeCategory, setActiveCategory] = useState('all');
   const [showFloatingButton, setShowFloatingButton] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');

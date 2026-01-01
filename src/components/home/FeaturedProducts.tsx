@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import { products } from '../../data';
+import { useAdminStore } from '../../store/adminStore';
 import { ProductCard } from '../store/ProductCard';
 
 export function FeaturedProducts() {
+  const { products } = useAdminStore();
   const featured = products.filter((p) => p.featured).slice(0, 4);
 
   return (
