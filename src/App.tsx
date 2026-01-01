@@ -9,6 +9,7 @@ import {
   ContactPage,
   CheckoutPage,
   OrderSuccessPage,
+  AdminPanelPage,
 } from './pages';
 
 function App() {
@@ -24,6 +25,9 @@ function App() {
           <Route path="contact" element={<ContactPage />} />
           <Route path="checkout" element={<CheckoutPage />} />
           <Route path="order-success" element={<OrderSuccessPage />} />
+          <Route path="admin/panel" element={<AdminPanelPage />} />
+          {/* Catch-all route for admin subpaths */}
+          <Route path="admin/panel/*" element={<AdminPanelPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
