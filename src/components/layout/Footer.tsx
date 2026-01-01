@@ -148,12 +148,21 @@ export function Footer() {
         
         {/* Concealed Admin Access */}
         <div className="mt-8 pt-4 border-t border-gray-800/50 text-center">
-          <Link
-            to="/admin/panel"
-            className="text-gray-600 text-xs hover:text-gray-400 transition-colors"
-          >
-            Admin Access
-          </Link>
+          <div className="flex items-center justify-center gap-4 text-xs">
+            <Link
+              to="/account"
+              className="text-gray-600 hover:text-gray-400 transition-colors"
+            >
+              Customer Panel
+            </Link>
+            <span className="text-gray-700">•</span>
+            <Link
+              to="/admin/panel"
+              className="text-gray-600 hover:text-gray-400 transition-colors"
+            >
+              Admin Access
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

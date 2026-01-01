@@ -11,6 +11,7 @@ const navLinks = [
   { path: '/services', label: 'Services' },
   { path: '/about', label: 'About' },
   { path: '/contact', label: 'Contact' },
+  { path: '/account', label: 'Account' },
 ];
 
 const MAX_CART_DISPLAY_COUNT = 9;
