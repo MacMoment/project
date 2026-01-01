@@ -129,22 +129,27 @@ export default function CheckoutPage() {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
               {step === 'contact' ? (
-                <form onSubmit={handleContactSubmit} className="space-y-6">
+                <form
+                  onSubmit={handleContactSubmit}
+                  className="space-y-6"
+                  aria-busy={isSubmitting}
+                >
                   <h2 className="text-xl font-bold text-gray-900 mb-6">
                     Contact Information
                   </h2>
 
-                  <Input
-                    id="email"
-                    type="email"
-                    label="Email Address"
-                    placeholder="john@example.com"
-                    required
-                    value={contactData.email}
-                    onChange={(e) =>
-                      setContactData({ ...contactData, email: e.target.value })
-                    }
-                  />
+                    <Input
+                      id="email"
+                      type="email"
+                      label="Email Address"
+                      placeholder="john@example.com"
+                      required
+                      autoComplete="email"
+                      value={contactData.email}
+                      onChange={(e) =>
+                        setContactData({ ...contactData, email: e.target.value })
+                      }
+                    />
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Input
@@ -152,6 +157,7 @@ export default function CheckoutPage() {
                       label="First Name"
                       placeholder="John"
                       required
+                      autoComplete="given-name"
                       value={contactData.firstName}
                       onChange={(e) =>
                         setContactData({
@@ -165,6 +171,7 @@ export default function CheckoutPage() {
                       label="Last Name"
                       placeholder="Doe"
                       required
+                      autoComplete="family-name"
                       value={contactData.lastName}
                       onChange={(e) =>
                         setContactData({
@@ -186,7 +193,11 @@ export default function CheckoutPage() {
                   </Button>
                 </form>
               ) : (
-                <form onSubmit={handlePaymentSubmit} className="space-y-6">
+                <form
+                  onSubmit={handlePaymentSubmit}
+                  className="space-y-6"
+                  aria-busy={isSubmitting}
+                >
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-bold text-gray-900">
                       Payment Details
@@ -206,6 +217,7 @@ export default function CheckoutPage() {
                     label="Name on Card"
                     placeholder="John Doe"
                     required
+                    autoComplete="cc-name"
                     value={paymentData.name}
                     onChange={(e) =>
                       setPaymentData({ ...paymentData, name: e.target.value })
@@ -217,6 +229,8 @@ export default function CheckoutPage() {
                     label="Card Number"
                     placeholder="4242 4242 4242 4242"
                     required
+                    inputMode="numeric"
+                    autoComplete="cc-number"
                     value={paymentData.cardNumber}
                     onChange={(e) =>
                       setPaymentData({
@@ -232,6 +246,8 @@ export default function CheckoutPage() {
                       label="Expiry Date"
                       placeholder="MM/YY"
                       required
+                      inputMode="numeric"
+                      autoComplete="cc-exp"
                       value={paymentData.expiry}
                       onChange={(e) =>
                         setPaymentData({
@@ -245,6 +261,8 @@ export default function CheckoutPage() {
                       label="CVC"
                       placeholder="123"
                       required
+                      inputMode="numeric"
+                      autoComplete="cc-csc"
                       value={paymentData.cvc}
                       onChange={(e) =>
                         setPaymentData({ ...paymentData, cvc: e.target.value })
@@ -258,7 +276,10 @@ export default function CheckoutPage() {
                   </div>
 
                   {error && (
-                    <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+                    <div
+                      className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm"
+                      role="alert"
+                    >
                       {error}
                     </div>
                   )}
