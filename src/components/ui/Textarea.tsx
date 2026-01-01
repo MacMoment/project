@@ -7,7 +7,10 @@ interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
 }
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className = '', label, error, id, ...props }, ref) => {
+  ({ className = '', label, error, id, 'aria-describedby': ariaDescribedBy, ...props }, ref) => {
+    const errorId = error && id ? `${id}-error` : undefined;
+    const describedBy = [ariaDescribedBy, errorId].filter(Boolean).join(' ') || undefined;
+
     return (
       <div className="w-full">
         {label && (
@@ -21,6 +24,8 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         <textarea
           ref={ref}
           id={id}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={describedBy}
           className={`
             w-full px-4 py-3 rounded-xl border border-gray-200 
             bg-white text-gray-900 placeholder-gray-400
@@ -32,7 +37,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           {...props}
         />
         {error && (
-          <p className="mt-1.5 text-sm text-red-500">{error}</p>
+          <p id={errorId} className="mt-1.5 text-sm text-red-500">
+            {error}
+          </p>
         )}
       </div>
     );

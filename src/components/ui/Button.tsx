@@ -1,5 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
-import { forwardRef } from 'react';
+import { cloneElement, forwardRef, isValidElement } from 'react';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
@@ -28,10 +28,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const combinedClassName = `${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`;
 
     // If asChild is true and children is a valid element, clone it with button styles
-    if (asChild && children) {
-      // For asChild, we just render the children directly without wrapping in a button
-      // The children should be a Link or anchor element
-      return <span className={combinedClassName}>{children}</span>;
+    if (asChild && children && isValidElement(children)) {
+      const childClassName = children.props.className ?? '';
+      return cloneElement(children, {
+        className: `${combinedClassName} ${childClassName}`.trim(),
+        ...props,
+      });
     }
     
     return (
