@@ -24,6 +24,42 @@ export interface Staff {
   lastActive: string;
 }
 
+export interface PaymentMethod {
+  brand: string;
+  last4: string;
+  expMonth: number;
+  expYear: number;
+}
+
+export interface Purchase {
+  id: string;
+  customerId: string;
+  customerName: string;
+  customerEmail: string;
+  productName: string;
+  amount: number;
+  status: 'completed' | 'pending' | 'failed';
+  purchasedAt: string;
+  paymentMethod: PaymentMethod;
+}
+
+export interface InvoiceItem {
+  description: string;
+  amount: number;
+}
+
+export interface Invoice {
+  id: string;
+  customerId: string;
+  customerName: string;
+  customerEmail: string;
+  total: number;
+  status: 'draft' | 'sent' | 'paid' | 'overdue';
+  issuedAt: string;
+  dueAt: string;
+  items: InvoiceItem[];
+}
+
 interface AdminState {
   // Products
   products: Product[];
@@ -56,6 +92,14 @@ interface AdminState {
   addStaff: (staff: Omit<Staff, 'id' | 'createdAt'>) => void;
   updateStaff: (id: string, staff: Partial<Staff>) => void;
   deleteStaff: (id: string) => void;
+
+  // Purchases
+  purchases: Purchase[];
+  addPurchase: (purchase: Omit<Purchase, 'id'>) => void;
+
+  // Invoices
+  invoices: Invoice[];
+  addInvoice: (invoice: Omit<Invoice, 'id'>) => void;
 }
 
 // Generate unique IDs using crypto for better uniqueness
@@ -75,6 +119,73 @@ const initialStaff: Staff[] = [
   { id: '1', name: 'John Admin', email: 'john@academystudios.com', status: 'active', role: 'admin', createdAt: '2024-01-01', lastActive: 'Now' },
   { id: '2', name: 'Sarah Support', email: 'sarah@academystudios.com', status: 'active', role: 'support', createdAt: '2024-03-15', lastActive: '5 min ago' },
   { id: '3', name: 'Mike Moderator', email: 'mike@academystudios.com', status: 'active', role: 'moderator', createdAt: '2024-06-01', lastActive: '1 hour ago' },
+];
+
+const initialPurchases: Purchase[] = [
+  {
+    id: 'P-1001',
+    customerId: '1',
+    customerName: 'Alex Gaming',
+    customerEmail: 'alex@gaming.com',
+    productName: 'Modern Villa Pack',
+    amount: 24.99,
+    status: 'completed',
+    purchasedAt: '2024-12-01',
+    paymentMethod: { brand: 'Visa', last4: '4242', expMonth: 7, expYear: 2026 },
+  },
+  {
+    id: 'P-1002',
+    customerId: '2',
+    customerName: 'BuildMaster Pro',
+    customerEmail: 'build@master.pro',
+    productName: 'Fantasy Castle Bundle',
+    amount: 34.99,
+    status: 'completed',
+    purchasedAt: '2024-12-02',
+    paymentMethod: { brand: 'Mastercard', last4: '1122', expMonth: 11, expYear: 2025 },
+  },
+  {
+    id: 'P-1003',
+    customerId: '3',
+    customerName: 'Creative Corp',
+    customerEmail: 'info@creativecorp.com',
+    productName: 'Space Station Module',
+    amount: 39.99,
+    status: 'pending',
+    purchasedAt: '2024-12-03',
+    paymentMethod: { brand: 'Amex', last4: '9001', expMonth: 3, expYear: 2027 },
+  },
+];
+
+const initialInvoices: Invoice[] = [
+  {
+    id: 'INV-5001',
+    customerId: '1',
+    customerName: 'Alex Gaming',
+    customerEmail: 'alex@gaming.com',
+    total: 149.0,
+    status: 'sent',
+    issuedAt: '2024-11-28',
+    dueAt: '2024-12-15',
+    items: [
+      { description: 'Custom environment build (Phase 1)', amount: 99.0 },
+      { description: 'Lighting pass add-on', amount: 50.0 },
+    ],
+  },
+  {
+    id: 'INV-5002',
+    customerId: '2',
+    customerName: 'BuildMaster Pro',
+    customerEmail: 'build@master.pro',
+    total: 220.0,
+    status: 'paid',
+    issuedAt: '2024-11-20',
+    dueAt: '2024-12-05',
+    items: [
+      { description: 'Asset pack licensing', amount: 180.0 },
+      { description: 'Priority support', amount: 40.0 },
+    ],
+  },
 ];
 
 export const useAdminStore = create<AdminState>()(
@@ -140,6 +251,18 @@ export const useAdminStore = create<AdminState>()(
       })),
       deleteStaff: (id) => set((state) => ({
         staff: state.staff.filter((s) => s.id !== id),
+      })),
+
+      // Purchases
+      purchases: initialPurchases,
+      addPurchase: (purchase) => set((state) => ({
+        purchases: [...state.purchases, { ...purchase, id: generateId() }],
+      })),
+
+      // Invoices
+      invoices: initialInvoices,
+      addInvoice: (invoice) => set((state) => ({
+        invoices: [...state.invoices, { ...invoice, id: generateId() }],
       })),
     }),
     {

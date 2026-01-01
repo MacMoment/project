@@ -33,8 +33,11 @@ import {
   GripVertical,
   UserCog,
   Save,
+  CreditCard,
 } from 'lucide-react';
-import { useAdminStore, type User, type Staff } from '../store/adminStore';
+import { AuthPanel } from '../components/auth/AuthPanel';
+import { useAdminStore, type User, type Staff, type Invoice } from '../store/adminStore';
+import { useAuthStore } from '../store/authStore';
 import type { Product, Category, PortfolioItem } from '../types';
 
 // Mock data for the admin panel
@@ -108,16 +111,28 @@ const systemHealth = [
   { name: 'Payment Gateway', status: 'degraded', uptime: '98.5%' },
 ];
 
-type TabType = 'dashboard' | 'products' | 'categories' | 'portfolio' | 'orders' | 'analytics' | 'users' | 'staff' | 'settings';
+type TabType = 'dashboard' | 'products' | 'categories' | 'portfolio' | 'orders' | 'analytics' | 'users' | 'staff' | 'billing' | 'settings';
 
 // Modal types
-type ModalType = 'product' | 'category' | 'portfolio' | 'user' | 'staff' | null;
+type ModalType = 'product' | 'category' | 'portfolio' | 'user' | 'staff' | 'invoice' | null;
+
+const formatCurrency = (amount: number) => `$${amount.toFixed(2)}`;
 
 export default function AdminPanelPage() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [modalOpen, setModalOpen] = useState<ModalType>(null);
-  const [editingItem, setEditingItem] = useState<Product | Category | PortfolioItem | User | Staff | null>(null);
+  const [editingItem, setEditingItem] = useState<Product | Category | PortfolioItem | User | Staff | Invoice | null>(null);
+  const [invoiceForm, setInvoiceForm] = useState({
+    customerName: '',
+    customerEmail: '',
+    issuedAt: '',
+    dueAt: '',
+    status: 'draft' as Invoice['status'],
+    items: [{ description: '', amount: 0 }],
+  });
+
+  const { user } = useAuthStore();
   
   // Admin store
   const {
@@ -143,7 +158,44 @@ export default function AdminPanelPage() {
     addStaff,
     updateStaff,
     deleteStaff,
+    purchases,
+    invoices,
+    addInvoice,
   } = useAdminStore();
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 pt-24 pb-16 flex justify-center">
+        <AuthPanel mode="admin" />
+      </div>
+    );
+  }
+
+  if (user.role !== 'admin') {
+    return (
+      <div className="min-h-screen bg-gray-50 pt-24 pb-16">
+        <div className="max-w-3xl mx-auto px-6 sm:px-8 lg:px-12">
+          <div className="bg-white border border-gray-100 rounded-3xl p-10 text-center shadow-lg">
+            <div className="w-14 h-14 rounded-2xl bg-purple-100 text-purple-600 mx-auto flex items-center justify-center mb-4">
+              <Shield size={24} />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900">Admin access required</h1>
+            <p className="text-gray-500 mt-2">
+              Your account does not have admin permissions. Switch to an admin account to continue.
+            </p>
+            <div className="mt-6">
+              <a
+                href="/account"
+                className="inline-flex items-center justify-center px-4 py-2 rounded-xl border border-purple-200 text-purple-700 bg-white hover:bg-purple-50 transition"
+              >
+                Go to customer panel
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
   const hasSearch = normalizedQuery.length > 0;
@@ -202,6 +254,35 @@ export default function AdminPanelPage() {
     );
   }, [hasSearch, normalizedQuery]);
 
+  const filteredPurchases = useMemo(() => {
+    if (!hasSearch) return purchases;
+    return purchases.filter((purchase) =>
+      [
+        purchase.id,
+        purchase.customerName,
+        purchase.customerEmail,
+        purchase.productName,
+        purchase.status,
+        purchase.amount.toString(),
+        purchase.paymentMethod.brand,
+        purchase.paymentMethod.last4,
+      ].some(matchesQuery)
+    );
+  }, [hasSearch, normalizedQuery, purchases]);
+
+  const filteredInvoices = useMemo(() => {
+    if (!hasSearch) return invoices;
+    return invoices.filter((invoice) =>
+      [
+        invoice.id,
+        invoice.customerName,
+        invoice.customerEmail,
+        invoice.status,
+        invoice.total.toString(),
+      ].some(matchesQuery)
+    );
+  }, [hasSearch, normalizedQuery, invoices]);
+
   const allowReorder = !hasSearch;
 
   const searchPlaceholder = useMemo(() => {
@@ -218,6 +299,8 @@ export default function AdminPanelPage() {
         return 'Search users...';
       case 'staff':
         return 'Search staff...';
+      case 'billing':
+        return 'Search purchases and invoices...';
       default:
         return 'Search...';
     }
@@ -231,6 +314,7 @@ export default function AdminPanelPage() {
     { id: 'analytics' as TabType, label: 'Analytics', icon: BarChart3 },
     { id: 'users' as TabType, label: 'Users', icon: Users },
     { id: 'staff' as TabType, label: 'Staff', icon: UserCog },
+    { id: 'billing' as TabType, label: 'Billing', icon: CreditCard },
     { id: 'settings' as TabType, label: 'Settings', icon: Settings },
   ];
 
@@ -321,6 +405,7 @@ export default function AdminPanelPage() {
                 {activeTab === 'orders' && 'Track and manage customer orders.'}
                 {activeTab === 'analytics' && 'Detailed insights into your store performance.'}
                 {activeTab === 'users' && 'Manage user accounts and permissions.'}
+                {activeTab === 'billing' && 'Create invoices and review customer purchase activity.'}
                 {activeTab === 'settings' && 'Configure your store settings and preferences.'}
               </p>
             </div>
@@ -348,6 +433,28 @@ export default function AdminPanelPage() {
                   </button>
                 )}
               </div>
+
+              {activeTab === 'billing' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setInvoiceForm({
+                      customerName: '',
+                      customerEmail: '',
+                      issuedAt: '',
+                      dueAt: '',
+                      status: 'draft',
+                      items: [{ description: '', amount: 0 }],
+                    });
+                    setEditingItem(null);
+                    setModalOpen('invoice');
+                  }}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-purple-600 text-white text-sm font-semibold rounded-xl shadow-lg shadow-purple-500/25 hover:bg-purple-700 transition"
+                >
+                  <Plus size={16} />
+                  New invoice
+                </button>
+              )}
 
               {/* Notifications */}
               <button className="relative p-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
@@ -930,6 +1037,137 @@ export default function AdminPanelPage() {
             </div>
           )}
 
+          {/* Billing Tab */}
+          {activeTab === 'billing' && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center">
+                      <FileText size={18} className="text-purple-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Total Invoices</p>
+                      <p className="text-2xl font-bold text-gray-900">{invoices.length}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center">
+                      <CreditCard size={18} className="text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Completed Purchases</p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {purchases.filter((purchase) => purchase.status === 'completed').length}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center">
+                      <DollarSign size={18} className="text-orange-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Invoice Balance</p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {formatCurrency(invoices.reduce((total, invoice) => total + invoice.total, 0))}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                  <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Customer Purchases</h3>
+                      <p className="text-sm text-gray-500">Card details are masked for security.</p>
+                    </div>
+                    <span className="text-sm text-gray-500">
+                      Showing {filteredPurchases.length}{hasSearch && ` of ${purchases.length}`} purchases
+                    </span>
+                  </div>
+                  <div className="divide-y divide-gray-100">
+                    {filteredPurchases.length === 0 ? (
+                      <div className="py-10 text-center text-gray-500">
+                        {hasSearch ? 'No purchases match your search.' : 'No purchases available.'}
+                      </div>
+                    ) : (
+                      filteredPurchases.map((purchase) => (
+                        <div key={purchase.id} className="p-6">
+                          <div className="flex items-start justify-between gap-4">
+                            <div>
+                              <p className="text-sm font-semibold text-gray-900">{purchase.productName}</p>
+                              <p className="text-xs text-gray-500">{purchase.customerName} • {purchase.customerEmail}</p>
+                              <p className="text-xs text-gray-400 mt-1">Purchased {purchase.purchasedAt}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-semibold text-gray-900">{formatCurrency(purchase.amount)}</p>
+                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(purchase.status)}`}>
+                                {purchase.status}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="mt-3 text-xs text-gray-500">
+                            {purchase.paymentMethod.brand} •••• {purchase.paymentMethod.last4} • Exp {purchase.paymentMethod.expMonth}/{purchase.paymentMethod.expYear}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                  <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Invoices</h3>
+                      <p className="text-sm text-gray-500">Track invoice status and totals.</p>
+                    </div>
+                    <span className="text-sm text-gray-500">
+                      Showing {filteredInvoices.length}{hasSearch && ` of ${invoices.length}`} invoices
+                    </span>
+                  </div>
+                  <div className="divide-y divide-gray-100">
+                    {filteredInvoices.length === 0 ? (
+                      <div className="py-10 text-center text-gray-500">
+                        {hasSearch ? 'No invoices match your search.' : 'No invoices available.'}
+                      </div>
+                    ) : (
+                      filteredInvoices.map((invoice) => (
+                        <div key={invoice.id} className="p-6">
+                          <div className="flex items-start justify-between gap-4">
+                            <div>
+                              <p className="text-sm font-semibold text-gray-900">{invoice.id}</p>
+                              <p className="text-xs text-gray-500">{invoice.customerName} • {invoice.customerEmail}</p>
+                              <p className="text-xs text-gray-400 mt-1">Issued {invoice.issuedAt} • Due {invoice.dueAt}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-semibold text-gray-900">{formatCurrency(invoice.total)}</p>
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-600 capitalize">
+                                {invoice.status}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {invoice.items.map((item, index) => (
+                              <span key={index} className="text-xs text-gray-500 bg-gray-100 rounded-full px-2.5 py-1">
+                                {item.description}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Categories Tab */}
           {activeTab === 'categories' && (
             <div className="space-y-6">
@@ -1334,6 +1572,20 @@ export default function AdminPanelPage() {
             } else {
               addStaff(staff as Omit<Staff, 'id' | 'createdAt'>);
             }
+            setModalOpen(null);
+            setEditingItem(null);
+          }}
+        />
+      )}
+
+      {/* Modal for Invoice Creation */}
+      {modalOpen === 'invoice' && (
+        <InvoiceModal
+          formData={invoiceForm}
+          onClose={() => { setModalOpen(null); setEditingItem(null); }}
+          onChange={setInvoiceForm}
+          onSave={(invoice) => {
+            addInvoice(invoice);
             setModalOpen(null);
             setEditingItem(null);
           }}
@@ -1771,13 +2023,13 @@ function UserModal({
 }
 
 // Staff Modal Component
-function StaffModal({ 
-  staff, 
-  onClose, 
-  onSave 
-}: { 
-  staff: Staff | null; 
-  onClose: () => void; 
+function StaffModal({
+  staff,
+  onClose,
+  onSave
+}: {
+  staff: Staff | null;
+  onClose: () => void;
   onSave: (staff: Partial<Staff>) => void;
 }) {
   const [formData, setFormData] = useState({
@@ -1857,6 +2109,199 @@ function StaffModal({
             <button type="submit" className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-medium flex items-center gap-2">
               <Save size={18} />
               {staff ? 'Update' : 'Create'} Staff
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function InvoiceModal({
+  formData,
+  onClose,
+  onSave,
+  onChange,
+}: {
+  formData: {
+    customerName: string;
+    customerEmail: string;
+    issuedAt: string;
+    dueAt: string;
+    status: Invoice['status'];
+    items: { description: string; amount: number }[];
+  };
+  onClose: () => void;
+  onSave: (invoice: Omit<Invoice, 'id'>) => void;
+  onChange: (data: {
+    customerName: string;
+    customerEmail: string;
+    issuedAt: string;
+    dueAt: string;
+    status: Invoice['status'];
+    items: { description: string; amount: number }[];
+  }) => void;
+}) {
+  const total = formData.items.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+
+  const updateItem = (index: number, field: 'description' | 'amount', value: string) => {
+    const updatedItems = formData.items.map((item, itemIndex) =>
+      itemIndex === index
+        ? { ...item, [field]: field === 'amount' ? Number(value) : value }
+        : item
+    );
+    onChange({ ...formData, items: updatedItems });
+  };
+
+  const addItem = () => {
+    onChange({ ...formData, items: [...formData.items, { description: '', amount: 0 }] });
+  };
+
+  const removeItem = (index: number) => {
+    if (formData.items.length === 1) return;
+    onChange({ ...formData, items: formData.items.filter((_, itemIndex) => itemIndex !== index) });
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-semibold text-gray-900">Create Invoice</h2>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
+            <X size={20} />
+          </button>
+        </div>
+
+        <form
+          className="space-y-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            onSave({
+              customerId: formData.customerEmail ? formData.customerEmail.split('@')[0] : 'unknown',
+              customerName: formData.customerName,
+              customerEmail: formData.customerEmail,
+              total,
+              status: formData.status,
+              issuedAt: formData.issuedAt,
+              dueAt: formData.dueAt,
+              items: formData.items,
+            });
+          }}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium text-gray-700">Customer name</label>
+              <input
+                type="text"
+                value={formData.customerName}
+                onChange={(event) => onChange({ ...formData, customerName: event.target.value })}
+                className="mt-2 w-full px-4 py-2 border border-gray-200 rounded-xl text-sm"
+                placeholder="Customer name"
+                required
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Customer email</label>
+              <input
+                type="email"
+                value={formData.customerEmail}
+                onChange={(event) => onChange({ ...formData, customerEmail: event.target.value })}
+                className="mt-2 w-full px-4 py-2 border border-gray-200 rounded-xl text-sm"
+                placeholder="customer@example.com"
+                required
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Issued date</label>
+              <input
+                type="date"
+                value={formData.issuedAt}
+                onChange={(event) => onChange({ ...formData, issuedAt: event.target.value })}
+                className="mt-2 w-full px-4 py-2 border border-gray-200 rounded-xl text-sm"
+                required
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Due date</label>
+              <input
+                type="date"
+                value={formData.dueAt}
+                onChange={(event) => onChange({ ...formData, dueAt: event.target.value })}
+                className="mt-2 w-full px-4 py-2 border border-gray-200 rounded-xl text-sm"
+                required
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Status</label>
+              <select
+                value={formData.status}
+                onChange={(event) => onChange({ ...formData, status: event.target.value as Invoice['status'] })}
+                className="mt-2 w-full px-4 py-2 border border-gray-200 rounded-xl text-sm"
+              >
+                <option value="draft">Draft</option>
+                <option value="sent">Sent</option>
+                <option value="paid">Paid</option>
+                <option value="overdue">Overdue</option>
+              </select>
+            </div>
+            <div className="flex items-end justify-between bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-600">
+              <span>Total</span>
+              <span className="font-semibold text-gray-900">{formatCurrency(total)}</span>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-gray-900">Invoice items</h3>
+              <button type="button" onClick={addItem} className="text-sm text-purple-600 hover:text-purple-700">
+                + Add item
+              </button>
+            </div>
+            {formData.items.map((item, index) => (
+              <div key={index} className="grid grid-cols-1 md:grid-cols-7 gap-3 items-center">
+                <div className="md:col-span-4">
+                  <input
+                    type="text"
+                    value={item.description}
+                    onChange={(event) => updateItem(index, 'description', event.target.value)}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm"
+                    placeholder="Service description"
+                    required
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={item.amount}
+                    onChange={(event) => updateItem(index, 'amount', event.target.value)}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm"
+                    placeholder="0.00"
+                    required
+                  />
+                </div>
+                <div className="md:col-span-1 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => removeItem(index)}
+                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    aria-label="Remove item"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-xl">
+              Cancel
+            </button>
+            <button type="submit" className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-medium flex items-center gap-2">
+              <Save size={18} />
+              Create Invoice
             </button>
           </div>
         </form>
