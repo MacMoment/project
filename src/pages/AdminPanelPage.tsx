@@ -554,6 +554,8 @@ export default function AdminPanelPage() {
                               <img
                                 src={product.image}
                                 alt={product.name}
+                                loading="lazy"
+                                decoding="async"
                                 className="w-12 h-12 rounded-lg object-cover"
                               />
                               <div>
@@ -753,7 +755,13 @@ export default function AdminPanelPage() {
                         <span className="w-6 h-6 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center text-sm font-bold">
                           {index + 1}
                         </span>
-                        <img src={product.image} alt={product.name} className="w-10 h-10 rounded-lg object-cover" />
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          loading="lazy"
+                          decoding="async"
+                          className="w-10 h-10 rounded-lg object-cover"
+                        />
                         <div className="flex-1">
                           <p className="text-sm font-medium text-gray-900">{product.name}</p>
                           <p className="text-xs text-gray-500">{productSales[product.id] || 0} sales</p>
@@ -1061,6 +1069,8 @@ export default function AdminPanelPage() {
                         <img
                           src={item.image}
                           alt={item.title}
+                          loading="lazy"
+                          decoding="async"
                           className="w-full h-full object-cover"
                         />
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">

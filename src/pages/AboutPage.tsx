@@ -46,6 +46,8 @@ export default function AboutPage() {
                 <img
                   src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=600&fit=crop"
                   alt="Team collaboration"
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -126,6 +128,8 @@ export default function AboutPage() {
                   <img
                     src={member.avatar}
                     alt={member.nickname}
+                    loading="lazy"
+                    decoding="async"
                     className="w-32 h-32 rounded-full object-cover mx-auto ring-4 ring-white shadow-lg"
                   />
                   <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#F73AFF]/20 to-[#A634FF]/20 opacity-0 group-hover:opacity-100 transition-opacity" />
