@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { ShoppingCart, Menu, X, ExternalLink } from 'lucide-react';
 import { useCartStore } from '../../store/cartStore';
+import { lockBodyScroll, unlockBodyScroll } from '../../utils/bodyScrollLock';
 
 const navLinks = [
   { path: '/', label: 'Home' },
@@ -48,6 +49,26 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, [handleScroll]);
 
+  useEffect(() => {
+    if (!isMobileMenuOpen) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    lockBodyScroll();
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      unlockBodyScroll();
+    };
+  }, [isMobileMenuOpen]);
+
   // Close mobile menu on route change
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -67,7 +88,7 @@ export function Navbar() {
             : 'bg-white'
       }`}
     >
-      <nav className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+      <nav className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12" aria-label="Primary">
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
@@ -155,6 +176,7 @@ export function Navbar() {
               }`}
               aria-label="Toggle menu"
               aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-menu"
             >
               {isMobileMenuOpen ? (
                 <X size={22} className={isDarkMode ? 'text-white' : 'text-gray-700'} />
@@ -179,6 +201,10 @@ export function Navbar() {
           onClick={closeMobileMenu}
         />
         <div
+          id="mobile-menu"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Mobile navigation"
           className={`absolute top-0 right-0 w-72 h-full bg-white shadow-2xl transform transition-transform duration-300 ${
             isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
           }`}

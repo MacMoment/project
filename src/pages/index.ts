@@ -7,3 +7,7 @@ export { default as ContactPage } from './ContactPage';
 export { default as CheckoutPage } from './CheckoutPage';
 export { default as OrderSuccessPage } from './OrderSuccessPage';
 export { default as AdminPanelPage } from './AdminPanelPage';
+export { default as PrivacyPolicyPage } from './PrivacyPolicyPage';
+export { default as TermsOfServicePage } from './TermsOfServicePage';
+export { default as RefundPolicyPage } from './RefundPolicyPage';
+export { default as NotFoundPage } from './NotFoundPage';
