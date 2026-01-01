@@ -503,7 +503,7 @@ export default function AdminPanelPage() {
                               <Edit size={18} />
                             </button>
                             <button 
-                              onClick={() => { if(confirm('Delete this product?')) deleteProduct(product.id); }}
+                              onClick={() => { if (confirm('Delete this product?')) deleteProduct(product.id); }}
                               className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                               title="Delete"
                             >
@@ -724,7 +724,7 @@ export default function AdminPanelPage() {
                           <Edit size={18} />
                         </button>
                         <button 
-                          onClick={() => { if(confirm('Delete this user?')) deleteUser(user.id); }}
+                          onClick={() => { if (confirm('Delete this user?')) deleteUser(user.id); }}
                           className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         >
                           <Trash2 size={18} />
@@ -784,7 +784,7 @@ export default function AdminPanelPage() {
                           <Edit size={18} />
                         </button>
                         <button 
-                          onClick={() => { if(confirm('Delete this staff member?')) deleteStaff(member.id); }}
+                          onClick={() => { if (confirm('Delete this staff member?')) deleteStaff(member.id); }}
                           className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         >
                           <Trash2 size={18} />
@@ -842,7 +842,7 @@ export default function AdminPanelPage() {
                         </button>
                         {category.slug !== 'all' && (
                           <button 
-                            onClick={() => { if(confirm('Delete this category?')) deleteCategory(category.id); }}
+                            onClick={() => { if (confirm('Delete this category?')) deleteCategory(category.id); }}
                             className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                           >
                             <Trash2 size={18} />
@@ -926,7 +926,7 @@ export default function AdminPanelPage() {
                           <Edit size={20} />
                         </button>
                         <button 
-                          onClick={() => { if(confirm('Delete this portfolio item?')) deletePortfolioItem(item.id); }}
+                          onClick={() => { if (confirm('Delete this portfolio item?')) deletePortfolioItem(item.id); }}
                           className="p-3 bg-white rounded-xl text-gray-700 hover:text-red-600 transition-colors"
                         >
                           <Trash2 size={20} />
@@ -1335,6 +1335,11 @@ function ProductModal({
   );
 }
 
+// Helper function to generate a slug from text
+function generateSlug(text: string): string {
+  return text.toLowerCase().replace(/\s+/g, '-');
+}
+
 // Category Modal Component
 function CategoryModal({ 
   category, 
@@ -1378,7 +1383,7 @@ function CategoryModal({
               onChange={(e) => setFormData({ 
                 ...formData, 
                 name: e.target.value,
-                slug: formData.slug || e.target.value.toLowerCase().replace(/\s+/g, '-'),
+                slug: formData.slug || generateSlug(e.target.value),
               })}
               className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-400"
               required
@@ -1389,7 +1394,7 @@ function CategoryModal({
             <input
               type="text"
               value={formData.slug}
-              onChange={(e) => setFormData({ ...formData, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
+              onChange={(e) => setFormData({ ...formData, slug: generateSlug(e.target.value) })}
               className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-400"
               required
             />

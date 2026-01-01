@@ -58,16 +58,16 @@ interface AdminState {
   deleteStaff: (id: string) => void;
 }
 
-// Generate unique IDs
-const generateId = () => Math.random().toString(36).substring(2, 9);
+// Generate unique IDs using crypto for better uniqueness
+const generateId = () => crypto.randomUUID ? crypto.randomUUID().split('-')[0] : Math.random().toString(36).substring(2, 9);
 
 // Mock initial users
 const initialUsers: User[] = [
-  { id: '1', name: 'Alex Gaming', email: 'alex@gaming.com', status: 'active', role: 'customer', createdAt: '2025-10-15', lastActive: '2 min ago' },
-  { id: '2', name: 'BuildMaster Pro', email: 'build@master.pro', status: 'active', role: 'customer', createdAt: '2025-11-01', lastActive: '5 min ago' },
-  { id: '3', name: 'Creative Corp', email: 'info@creativecorp.com', status: 'active', role: 'customer', createdAt: '2025-09-20', lastActive: '12 min ago' },
-  { id: '4', name: 'PixelCreator', email: 'pixel@creator.net', status: 'active', role: 'customer', createdAt: '2025-12-01', lastActive: '25 min ago' },
-  { id: '5', name: 'ServerKing', email: 'admin@serverking.io', status: 'inactive', role: 'customer', createdAt: '2025-08-15', lastActive: '1 hour ago' },
+  { id: '1', name: 'Alex Gaming', email: 'alex@gaming.com', status: 'active', role: 'customer', createdAt: '2024-10-15', lastActive: '2 min ago' },
+  { id: '2', name: 'BuildMaster Pro', email: 'build@master.pro', status: 'active', role: 'customer', createdAt: '2024-11-01', lastActive: '5 min ago' },
+  { id: '3', name: 'Creative Corp', email: 'info@creativecorp.com', status: 'active', role: 'customer', createdAt: '2024-09-20', lastActive: '12 min ago' },
+  { id: '4', name: 'PixelCreator', email: 'pixel@creator.net', status: 'active', role: 'customer', createdAt: '2024-12-01', lastActive: '25 min ago' },
+  { id: '5', name: 'ServerKing', email: 'admin@serverking.io', status: 'inactive', role: 'customer', createdAt: '2024-08-15', lastActive: '1 hour ago' },
 ];
 
 // Mock initial staff
