@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { ShoppingCart, Menu, X, ExternalLink, Shield } from 'lucide-react';
+import { ShoppingCart, Menu, X, ExternalLink } from 'lucide-react';
 import { useCartStore } from '../../store/cartStore';
 
 const navLinks = [
@@ -113,15 +113,6 @@ export function Navbar() {
 
           {/* Right Side Actions */}
           <div className="flex items-center gap-2">
-            {/* Admin Panel Button */}
-            <Link
-              to="/admin/panel"
-              className="hidden md:flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40"
-            >
-              <Shield size={14} />
-              Admin
-            </Link>
-
             <a
               href="https://buildersacademy.com"
               target="_blank"
@@ -210,14 +201,6 @@ export function Navbar() {
               </NavLink>
             ))}
             <hr className="my-4 border-gray-100" />
-            <Link
-              to="/admin/panel"
-              onClick={closeMobileMenu}
-              className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-medium rounded-xl transition-colors"
-            >
-              <Shield size={16} />
-              Admin Panel
-            </Link>
             <a
               href="https://buildersacademy.com"
               target="_blank"

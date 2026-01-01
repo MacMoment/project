@@ -8,13 +8,10 @@ import {
   Settings,
   BarChart3,
   DollarSign,
-  Eye,
   Download,
   RefreshCw,
   Bell,
   Search,
-  Filter,
-  MoreVertical,
   ChevronRight,
   ArrowUpRight,
   ArrowDownRight,
@@ -27,8 +24,18 @@ import {
   Globe,
   Shield,
   FileText,
+  Tag,
+  Image,
+  Plus,
+  Edit,
+  Trash2,
+  X,
+  GripVertical,
+  UserCog,
+  Save,
 } from 'lucide-react';
-import { products } from '../data';
+import { useAdminStore, type User, type Staff } from '../store/adminStore';
+import type { Product, Category, PortfolioItem } from '../types';
 
 // Mock data for the admin panel
 const stats = [
@@ -101,18 +108,52 @@ const systemHealth = [
   { name: 'Payment Gateway', status: 'degraded', uptime: '98.5%' },
 ];
 
-type TabType = 'dashboard' | 'products' | 'orders' | 'analytics' | 'users' | 'settings';
+type TabType = 'dashboard' | 'products' | 'categories' | 'portfolio' | 'orders' | 'analytics' | 'users' | 'staff' | 'settings';
+
+// Modal types
+type ModalType = 'product' | 'category' | 'portfolio' | 'user' | 'staff' | null;
 
 export default function AdminPanelPage() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
+  const [modalOpen, setModalOpen] = useState<ModalType>(null);
+  const [editingItem, setEditingItem] = useState<Product | Category | PortfolioItem | User | Staff | null>(null);
+  
+  // Admin store
+  const {
+    products,
+    addProduct,
+    updateProduct,
+    deleteProduct,
+    categories,
+    addCategory,
+    updateCategory,
+    deleteCategory,
+    reorderCategories,
+    portfolioItems,
+    addPortfolioItem,
+    updatePortfolioItem,
+    deletePortfolioItem,
+    reorderPortfolio,
+    users,
+    addUser,
+    updateUser,
+    deleteUser,
+    staff,
+    addStaff,
+    updateStaff,
+    deleteStaff,
+  } = useAdminStore();
 
   const sidebarItems = [
     { id: 'dashboard' as TabType, label: 'Dashboard', icon: LayoutDashboard },
     { id: 'products' as TabType, label: 'Products', icon: Package },
+    { id: 'categories' as TabType, label: 'Categories', icon: Tag },
+    { id: 'portfolio' as TabType, label: 'Portfolio', icon: Image },
     { id: 'orders' as TabType, label: 'Orders', icon: ShoppingCart },
     { id: 'analytics' as TabType, label: 'Analytics', icon: BarChart3 },
     { id: 'users' as TabType, label: 'Users', icon: Users },
+    { id: 'staff' as TabType, label: 'Staff', icon: UserCog },
     { id: 'settings' as TabType, label: 'Settings', icon: Settings },
   ];
 
@@ -384,13 +425,12 @@ export default function AdminPanelPage() {
               {/* Actions Bar */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <button className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-medium shadow-lg shadow-purple-500/25 hover:shadow-xl transition-shadow">
-                    <Package size={18} />
+                  <button 
+                    onClick={() => { setEditingItem(null); setModalOpen('product'); }}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-medium shadow-lg shadow-purple-500/25 hover:shadow-xl transition-shadow"
+                  >
+                    <Plus size={18} />
                     Add Product
-                  </button>
-                  <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors">
-                    <Filter size={18} />
-                    Filters
                   </button>
                 </div>
                 <div className="text-sm text-gray-500">
@@ -406,8 +446,8 @@ export default function AdminPanelPage() {
                       <th className="text-left py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Product</th>
                       <th className="text-left py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Category</th>
                       <th className="text-left py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Price</th>
+                      <th className="text-left py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Tags</th>
                       <th className="text-left py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Rating</th>
-                      <th className="text-left py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
                       <th className="text-right py-4 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
@@ -434,23 +474,40 @@ export default function AdminPanelPage() {
                         </td>
                         <td className="py-4 px-6 font-semibold text-gray-900">${product.price}</td>
                         <td className="py-4 px-6">
+                          <div className="flex flex-wrap gap-1">
+                            {product.tags.slice(0, 2).map((tag) => (
+                              <span key={tag} className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs">
+                                {tag}
+                              </span>
+                            ))}
+                            {product.tags.length > 2 && (
+                              <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs">
+                                +{product.tags.length - 2}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-4 px-6">
                           <div className="flex items-center gap-1">
                             <span className="text-yellow-500">★</span>
                             <span className="text-sm text-gray-900">{product.rating}</span>
                           </div>
                         </td>
                         <td className="py-4 px-6">
-                          <span className="px-3 py-1 bg-green-50 text-green-600 rounded-full text-xs font-medium">
-                            Active
-                          </span>
-                        </td>
-                        <td className="py-4 px-6">
                           <div className="flex items-center justify-end gap-2">
-                            <button className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">
-                              <Eye size={18} />
+                            <button 
+                              onClick={() => { setEditingItem(product); setModalOpen('product'); }}
+                              className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                              title="Edit"
+                            >
+                              <Edit size={18} />
                             </button>
-                            <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                              <MoreVertical size={18} />
+                            <button 
+                              onClick={() => { if (confirm('Delete this product?')) deleteProduct(product.id); }}
+                              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Delete"
+                            >
+                              <Trash2 size={18} />
                             </button>
                           </div>
                         </td>
@@ -630,35 +687,301 @@ export default function AdminPanelPage() {
             <div className="space-y-6">
               <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="font-semibold text-gray-900">User Management</h3>
-                  <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-medium text-sm">
-                    <Users size={16} />
+                  <h3 className="font-semibold text-gray-900">User Account Management</h3>
+                  <button 
+                    onClick={() => { setEditingItem(null); setModalOpen('user'); }}
+                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-medium text-sm"
+                  >
+                    <Plus size={16} />
                     Add User
                   </button>
                 </div>
                 <div className="space-y-4">
-                  {userActivity.map((user, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                  {users.map((user) => (
+                    <div key={user.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
-                          {user.user.charAt(0)}
+                          {user.name.charAt(0)}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">{user.user}</p>
+                          <p className="font-medium text-gray-900">{user.name}</p>
                           <p className="text-sm text-gray-500">{user.email}</p>
+                          <p className="text-xs text-gray-400">Last active: {user.lastActive}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="px-3 py-1 bg-green-50 text-green-600 rounded-full text-xs font-medium">
-                          Active
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          user.status === 'active' ? 'bg-green-50 text-green-600' :
+                          user.status === 'inactive' ? 'bg-gray-100 text-gray-600' :
+                          'bg-red-50 text-red-600'
+                        }`}>
+                          {user.status}
                         </span>
-                        <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg transition-colors">
-                          <MoreVertical size={18} />
+                        <button 
+                          onClick={() => { setEditingItem(user); setModalOpen('user'); }}
+                          className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                        >
+                          <Edit size={18} />
+                        </button>
+                        <button 
+                          onClick={() => { if (confirm('Delete this user?')) deleteUser(user.id); }}
+                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          <Trash2 size={18} />
                         </button>
                       </div>
                     </div>
                   ))}
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Staff Tab */}
+          {activeTab === 'staff' && (
+            <div className="space-y-6">
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="font-semibold text-gray-900">Staff Account Management</h3>
+                  <button 
+                    onClick={() => { setEditingItem(null); setModalOpen('staff'); }}
+                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-medium text-sm"
+                  >
+                    <Plus size={16} />
+                    Add Staff
+                  </button>
+                </div>
+                <div className="space-y-4">
+                  {staff.map((member) => (
+                    <div key={member.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold">
+                          {member.name.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">{member.name}</p>
+                          <p className="text-sm text-gray-500">{member.email}</p>
+                          <p className="text-xs text-gray-400">Last active: {member.lastActive}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${
+                          member.role === 'admin' ? 'bg-purple-50 text-purple-600' :
+                          member.role === 'moderator' ? 'bg-blue-50 text-blue-600' :
+                          'bg-green-50 text-green-600'
+                        }`}>
+                          {member.role}
+                        </span>
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          member.status === 'active' ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-600'
+                        }`}>
+                          {member.status}
+                        </span>
+                        <button 
+                          onClick={() => { setEditingItem(member); setModalOpen('staff'); }}
+                          className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                        >
+                          <Edit size={18} />
+                        </button>
+                        <button 
+                          onClick={() => { if (confirm('Delete this staff member?')) deleteStaff(member.id); }}
+                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Categories Tab */}
+          {activeTab === 'categories' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Category/Tag Management</h3>
+                  <p className="text-sm text-gray-500">Manage product categories and tags. Drag to reorder.</p>
+                </div>
+                <button 
+                  onClick={() => { setEditingItem(null); setModalOpen('category'); }}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-medium shadow-lg shadow-purple-500/25 hover:shadow-xl transition-shadow"
+                >
+                  <Plus size={18} />
+                  Add Category
+                </button>
+              </div>
+
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="divide-y divide-gray-100">
+                  {categories.sort((a, b) => a.order - b.order).map((category, index) => (
+                    <div key={category.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center gap-4">
+                        <button className="p-1 text-gray-400 hover:text-gray-600 cursor-grab">
+                          <GripVertical size={20} />
+                        </button>
+                        <span className="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center text-sm font-bold">
+                          {index + 1}
+                        </span>
+                        <div>
+                          <p className="font-medium text-gray-900">{category.name}</p>
+                          <p className="text-xs text-gray-500">Slug: {category.slug}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-500 mr-4">
+                          {products.filter(p => p.category === category.slug).length} products
+                        </span>
+                        <button 
+                          onClick={() => { setEditingItem(category); setModalOpen('category'); }}
+                          className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                        >
+                          <Edit size={18} />
+                        </button>
+                        {category.slug !== 'all' && (
+                          <button 
+                            onClick={() => { if (confirm('Delete this category?')) deleteCategory(category.id); }}
+                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => {
+                            if (index > 0) {
+                              const newCategories = [...categories];
+                              const current = newCategories.find(c => c.id === category.id)!;
+                              const prev = newCategories.find(c => c.order === category.order - 1);
+                              if (prev) {
+                                current.order -= 1;
+                                prev.order += 1;
+                                reorderCategories(newCategories);
+                              }
+                            }
+                          }}
+                          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+                          disabled={index === 0}
+                        >
+                          ↑
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (index < categories.length - 1) {
+                              const newCategories = [...categories];
+                              const current = newCategories.find(c => c.id === category.id)!;
+                              const next = newCategories.find(c => c.order === category.order + 1);
+                              if (next) {
+                                current.order += 1;
+                                next.order -= 1;
+                                reorderCategories(newCategories);
+                              }
+                            }
+                          }}
+                          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+                          disabled={index === categories.length - 1}
+                        >
+                          ↓
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Portfolio Tab */}
+          {activeTab === 'portfolio' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Portfolio Management</h3>
+                  <p className="text-sm text-gray-500">Manage portfolio images, grid sizes, and display order.</p>
+                </div>
+                <button 
+                  onClick={() => { setEditingItem(null); setModalOpen('portfolio'); }}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-medium shadow-lg shadow-purple-500/25 hover:shadow-xl transition-shadow"
+                >
+                  <Plus size={18} />
+                  Add Portfolio Item
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {portfolioItems.map((item, index) => (
+                  <div key={item.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group">
+                    <div className="relative aspect-[4/3]">
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                        <button 
+                          onClick={() => { setEditingItem(item); setModalOpen('portfolio'); }}
+                          className="p-3 bg-white rounded-xl text-gray-700 hover:text-purple-600 transition-colors"
+                        >
+                          <Edit size={20} />
+                        </button>
+                        <button 
+                          onClick={() => { if (confirm('Delete this portfolio item?')) deletePortfolioItem(item.id); }}
+                          className="p-3 bg-white rounded-xl text-gray-700 hover:text-red-600 transition-colors"
+                        >
+                          <Trash2 size={20} />
+                        </button>
+                      </div>
+                      <span className={`absolute top-3 right-3 px-2 py-1 rounded-lg text-xs font-medium ${
+                        item.gridSize === 'large' ? 'bg-purple-500 text-white' :
+                        item.gridSize === 'medium' ? 'bg-blue-500 text-white' :
+                        'bg-gray-500 text-white'
+                      }`}>
+                        {item.gridSize}
+                      </span>
+                      <span className="absolute top-3 left-3 px-2 py-1 bg-black/50 text-white rounded-lg text-xs font-medium">
+                        #{index + 1}
+                      </span>
+                    </div>
+                    <div className="p-4">
+                      <h4 className="font-medium text-gray-900 mb-1">{item.title}</h4>
+                      <p className="text-sm text-gray-500 line-clamp-2">{item.description}</p>
+                      <div className="flex items-center justify-between mt-3">
+                        <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs capitalize">
+                          {item.category}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => {
+                              if (index > 0) {
+                                const newItems = [...portfolioItems];
+                                [newItems[index], newItems[index - 1]] = [newItems[index - 1], newItems[index]];
+                                reorderPortfolio(newItems);
+                              }
+                            }}
+                            className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50"
+                            disabled={index === 0}
+                          >
+                            ↑
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (index < portfolioItems.length - 1) {
+                                const newItems = [...portfolioItems];
+                                [newItems[index], newItems[index + 1]] = [newItems[index + 1], newItems[index]];
+                                reorderPortfolio(newItems);
+                              }
+                            }}
+                            className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50"
+                            disabled={index === portfolioItems.length - 1}
+                          >
+                            ↓
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -771,6 +1094,616 @@ export default function AdminPanelPage() {
             </div>
           )}
         </main>
+      </div>
+      
+      {/* Modal for Product CRUD */}
+      {modalOpen === 'product' && (
+        <ProductModal
+          product={editingItem as Product | null}
+          categories={categories}
+          onClose={() => { setModalOpen(null); setEditingItem(null); }}
+          onSave={(product) => {
+            if (editingItem) {
+              updateProduct(editingItem.id, product);
+            } else {
+              addProduct(product as Omit<Product, 'id'>);
+            }
+            setModalOpen(null);
+            setEditingItem(null);
+          }}
+        />
+      )}
+
+      {/* Modal for Category CRUD */}
+      {modalOpen === 'category' && (
+        <CategoryModal
+          category={editingItem as Category | null}
+          maxOrder={Math.max(...categories.map(c => c.order), 0)}
+          onClose={() => { setModalOpen(null); setEditingItem(null); }}
+          onSave={(category) => {
+            if (editingItem) {
+              updateCategory(editingItem.id, category);
+            } else {
+              addCategory(category as Omit<Category, 'id'>);
+            }
+            setModalOpen(null);
+            setEditingItem(null);
+          }}
+        />
+      )}
+
+      {/* Modal for Portfolio CRUD */}
+      {modalOpen === 'portfolio' && (
+        <PortfolioModal
+          item={editingItem as PortfolioItem | null}
+          categories={categories}
+          onClose={() => { setModalOpen(null); setEditingItem(null); }}
+          onSave={(item) => {
+            if (editingItem) {
+              updatePortfolioItem(editingItem.id, item);
+            } else {
+              addPortfolioItem(item as Omit<PortfolioItem, 'id'>);
+            }
+            setModalOpen(null);
+            setEditingItem(null);
+          }}
+        />
+      )}
+
+      {/* Modal for User CRUD */}
+      {modalOpen === 'user' && (
+        <UserModal
+          user={editingItem as User | null}
+          onClose={() => { setModalOpen(null); setEditingItem(null); }}
+          onSave={(user) => {
+            if (editingItem) {
+              updateUser(editingItem.id, user);
+            } else {
+              addUser(user as Omit<User, 'id' | 'createdAt'>);
+            }
+            setModalOpen(null);
+            setEditingItem(null);
+          }}
+        />
+      )}
+
+      {/* Modal for Staff CRUD */}
+      {modalOpen === 'staff' && (
+        <StaffModal
+          staff={editingItem as Staff | null}
+          onClose={() => { setModalOpen(null); setEditingItem(null); }}
+          onSave={(staff) => {
+            if (editingItem) {
+              updateStaff(editingItem.id, staff);
+            } else {
+              addStaff(staff as Omit<Staff, 'id' | 'createdAt'>);
+            }
+            setModalOpen(null);
+            setEditingItem(null);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+// Product Modal Component
+function ProductModal({ 
+  product, 
+  categories,
+  onClose, 
+  onSave 
+}: { 
+  product: Product | null; 
+  categories: Category[];
+  onClose: () => void; 
+  onSave: (product: Partial<Product>) => void;
+}) {
+  const [formData, setFormData] = useState({
+    name: product?.name || '',
+    description: product?.description || '',
+    price: product?.price || 0,
+    image: product?.image || '',
+    category: product?.category || 'buildings',
+    tags: product?.tags?.join(', ') || '',
+    rating: product?.rating || 4.5,
+    featured: product?.featured || false,
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave({
+      ...formData,
+      tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+          <h2 className="text-xl font-bold text-gray-900">
+            {product ? 'Edit Product' : 'Add New Product'}
+          </h2>
+          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 rounded-lg">
+            <X size={20} />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Product Name</label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-400"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-400"
+              rows={3}
+              required
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Price ($)</label>
+              <input
+                type="number"
+                step="0.01"
+                value={formData.price}
+                onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-400"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+              <select
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-400"
+              >
+                {categories.filter(c => c.slug !== 'all').map((cat) => (
+                  <option key={cat.id} value={cat.slug}>{cat.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Image URL</label>
+            <input
+              type="url"
+              value={formData.image}
+              onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-400"
+              placeholder="https://..."
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Tags (comma-separated)</label>
+            <input
+              type="text"
+              value={formData.tags}
+              onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-400"
+              placeholder="modern, villa, luxury"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+              <input
+                type="number"
+                step="0.1"
+                min="0"
+                max="5"
+                value={formData.rating}
+                onChange={(e) => setFormData({ ...formData, rating: parseFloat(e.target.value) })}
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-400"
+              />
+            </div>
+            <div className="flex items-center pt-8">
+              <input
+                type="checkbox"
+                id="featured"
+                checked={formData.featured}
+                onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+                className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+              />
+              <label htmlFor="featured" className="ml-2 text-sm text-gray-700">Featured Product</label>
+            </div>
+          </div>
+          <div className="flex justify-end gap-3 pt-4">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-xl">
+              Cancel
+            </button>
+            <button type="submit" className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-medium flex items-center gap-2">
+              <Save size={18} />
+              {product ? 'Update' : 'Create'} Product
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// Helper function to generate a slug from text
+function generateSlug(text: string): string {
+  return text.toLowerCase().replace(/\s+/g, '-');
+}
+
+// Category Modal Component
+function CategoryModal({ 
+  category, 
+  maxOrder,
+  onClose, 
+  onSave 
+}: { 
+  category: Category | null; 
+  maxOrder: number;
+  onClose: () => void; 
+  onSave: (category: Partial<Category>) => void;
+}) {
+  const [formData, setFormData] = useState({
+    name: category?.name || '',
+    slug: category?.slug || '',
+    order: category?.order ?? maxOrder + 1,
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(formData);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
+        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+          <h2 className="text-xl font-bold text-gray-900">
+            {category ? 'Edit Category' : 'Add New Category'}
+          </h2>
+          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 rounded-lg">
+            <X size={20} />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Category Name</label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ 
+                ...formData, 
+                name: e.target.value,
+                slug: formData.slug || generateSlug(e.target.value),
+              })}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-400"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Slug</label>
+            <input
+              type="text"
+              value={formData.slug}
+              onChange={(e) => setFormData({ ...formData, slug: generateSlug(e.target.value) })}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-400"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Order</label>
+            <input
+              type="number"
+              value={formData.order}
+              onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) })}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-400"
+              required
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-4">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-xl">
+              Cancel
+            </button>
+            <button type="submit" className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-medium flex items-center gap-2">
+              <Save size={18} />
+              {category ? 'Update' : 'Create'} Category
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// Portfolio Modal Component
+function PortfolioModal({ 
+  item, 
+  categories,
+  onClose, 
+  onSave 
+}: { 
+  item: PortfolioItem | null; 
+  categories: Category[];
+  onClose: () => void; 
+  onSave: (item: Partial<PortfolioItem>) => void;
+}) {
+  const [formData, setFormData] = useState({
+    title: item?.title || '',
+    description: item?.description || '',
+    image: item?.image || '',
+    category: item?.category || 'buildings',
+    gridSize: item?.gridSize || 'medium' as 'small' | 'medium' | 'large',
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(formData);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg">
+        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+          <h2 className="text-xl font-bold text-gray-900">
+            {item ? 'Edit Portfolio Item' : 'Add Portfolio Item'}
+          </h2>
+          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 rounded-lg">
+            <X size={20} />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+            <input
+              type="text"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-400"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-400"
+              rows={3}
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Image URL</label>
+            <input
+              type="url"
+              value={formData.image}
+              onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-400"
+              placeholder="https://..."
+              required
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+              <select
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-400"
+              >
+                {categories.filter(c => c.slug !== 'all').map((cat) => (
+                  <option key={cat.id} value={cat.slug}>{cat.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Grid Size</label>
+              <select
+                value={formData.gridSize}
+                onChange={(e) => setFormData({ ...formData, gridSize: e.target.value as 'small' | 'medium' | 'large' })}
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-400"
+              >
+                <option value="small">Small</option>
+                <option value="medium">Medium</option>
+                <option value="large">Large</option>
+              </select>
+            </div>
+          </div>
+          <div className="flex justify-end gap-3 pt-4">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-xl">
+              Cancel
+            </button>
+            <button type="submit" className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-medium flex items-center gap-2">
+              <Save size={18} />
+              {item ? 'Update' : 'Create'} Item
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// User Modal Component
+function UserModal({ 
+  user, 
+  onClose, 
+  onSave 
+}: { 
+  user: User | null; 
+  onClose: () => void; 
+  onSave: (user: Partial<User>) => void;
+}) {
+  const [formData, setFormData] = useState({
+    name: user?.name || '',
+    email: user?.email || '',
+    status: user?.status || 'active' as 'active' | 'inactive' | 'suspended',
+    lastActive: user?.lastActive || 'Just now',
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave({ ...formData, role: 'customer' });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
+        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+          <h2 className="text-xl font-bold text-gray-900">
+            {user ? 'Edit User' : 'Add New User'}
+          </h2>
+          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 rounded-lg">
+            <X size={20} />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-400"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-400"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <select
+              value={formData.status}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value as 'active' | 'inactive' | 'suspended' })}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-400"
+            >
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="suspended">Suspended</option>
+            </select>
+          </div>
+          <div className="flex justify-end gap-3 pt-4">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-xl">
+              Cancel
+            </button>
+            <button type="submit" className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-medium flex items-center gap-2">
+              <Save size={18} />
+              {user ? 'Update' : 'Create'} User
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// Staff Modal Component
+function StaffModal({ 
+  staff, 
+  onClose, 
+  onSave 
+}: { 
+  staff: Staff | null; 
+  onClose: () => void; 
+  onSave: (staff: Partial<Staff>) => void;
+}) {
+  const [formData, setFormData] = useState({
+    name: staff?.name || '',
+    email: staff?.email || '',
+    status: staff?.status || 'active' as 'active' | 'inactive',
+    role: staff?.role || 'support' as 'admin' | 'moderator' | 'support',
+    lastActive: staff?.lastActive || 'Just now',
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(formData);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
+        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+          <h2 className="text-xl font-bold text-gray-900">
+            {staff ? 'Edit Staff Member' : 'Add New Staff'}
+          </h2>
+          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 rounded-lg">
+            <X size={20} />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-400"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-400"
+              required
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
+              <select
+                value={formData.role}
+                onChange={(e) => setFormData({ ...formData, role: e.target.value as 'admin' | 'moderator' | 'support' })}
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-400"
+              >
+                <option value="admin">Admin</option>
+                <option value="moderator">Moderator</option>
+                <option value="support">Support</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+              <select
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value as 'active' | 'inactive' })}
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-400"
+              >
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+          <div className="flex justify-end gap-3 pt-4">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-xl">
+              Cancel
+            </button>
+            <button type="submit" className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-medium flex items-center gap-2">
+              <Save size={18} />
+              {staff ? 'Update' : 'Create'} Staff
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

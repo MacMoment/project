@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { portfolioItems } from '../data';
+import { useAdminStore } from '../store/adminStore';
 import { X } from 'lucide-react';
+import type { PortfolioItem } from '../types';
 
 export default function PortfolioPage() {
-  const [selectedItem, setSelectedItem] = useState<typeof portfolioItems[0] | null>(null);
+  const { portfolioItems } = useAdminStore();
+  const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [visibleCount, setVisibleCount] = useState(6);
 
   const visibleItems = portfolioItems.slice(0, visibleCount);
