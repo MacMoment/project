@@ -28,13 +28,14 @@ async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise
     },
   });
 
-  const data = await response.json();
+  const contentType = response.headers.get('content-type') || '';
+  const data = contentType.includes('application/json') ? await response.json() : null;
 
   if (!response.ok) {
-    throw new Error(data.error || 'An error occurred');
+    throw new Error((data as { error?: string } | null)?.error || response.statusText || 'An error occurred');
   }
 
-  return data;
+  return data as T;
 }
 
 // Products API
