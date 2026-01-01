@@ -18,6 +18,24 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.skip-link {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translateY(-120%);
+  background: #ffffff;
+  color: #111827;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0 0 0.75rem 0;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+  z-index: 60;
+  transition: transform 0.2s ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
 #root {
   min-height: 100vh;
   display: flex;

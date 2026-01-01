@@ -157,13 +157,18 @@ export default function ContactPage() {
                   Send a Message
                 </h2>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form
+                  onSubmit={handleSubmit}
+                  className="space-y-6"
+                  aria-busy={isSubmitting}
+                >
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Input
                       id="name"
                       label="Your Name"
                       placeholder="John Doe"
                       required
+                      autoComplete="name"
                       value={formData.name}
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
@@ -175,6 +180,7 @@ export default function ContactPage() {
                       label="Email Address"
                       placeholder="john@example.com"
                       required
+                      autoComplete="email"
                       value={formData.email}
                       onChange={(e) =>
                         setFormData({ ...formData, email: e.target.value })
@@ -206,7 +212,10 @@ export default function ContactPage() {
                   />
 
                   {error && (
-                    <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+                    <div
+                      className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm"
+                      role="alert"
+                    >
                       {error}
                     </div>
                   )}

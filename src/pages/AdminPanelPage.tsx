@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   LayoutDashboard,
   Package,
@@ -145,6 +145,83 @@ export default function AdminPanelPage() {
     deleteStaff,
   } = useAdminStore();
 
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const hasSearch = normalizedQuery.length > 0;
+  const matchesQuery = (value: string) => value.toLowerCase().includes(normalizedQuery);
+
+  const filteredProducts = useMemo(() => {
+    if (!hasSearch) return products;
+    return products.filter((product) =>
+      [
+        product.name,
+        product.description,
+        product.category,
+        product.tags.join(' '),
+        product.price.toString(),
+      ].some(matchesQuery)
+    );
+  }, [hasSearch, normalizedQuery, products]);
+
+  const sortedCategories = useMemo(
+    () => [...categories].sort((a, b) => a.order - b.order),
+    [categories]
+  );
+
+  const filteredCategories = useMemo(() => {
+    if (!hasSearch) return sortedCategories;
+    return sortedCategories.filter((category) =>
+      [category.name, category.slug].some(matchesQuery)
+    );
+  }, [hasSearch, normalizedQuery, sortedCategories]);
+
+  const filteredPortfolio = useMemo(() => {
+    if (!hasSearch) return portfolioItems;
+    return portfolioItems.filter((item) =>
+      [item.title, item.description, item.category].some(matchesQuery)
+    );
+  }, [hasSearch, normalizedQuery, portfolioItems]);
+
+  const filteredUsers = useMemo(() => {
+    if (!hasSearch) return users;
+    return users.filter((user) =>
+      [user.name, user.email, user.status].some(matchesQuery)
+    );
+  }, [hasSearch, normalizedQuery, users]);
+
+  const filteredStaff = useMemo(() => {
+    if (!hasSearch) return staff;
+    return staff.filter((member) =>
+      [member.name, member.email, member.role, member.status].some(matchesQuery)
+    );
+  }, [hasSearch, normalizedQuery, staff]);
+
+  const filteredOrders = useMemo(() => {
+    if (!hasSearch) return recentOrders;
+    return recentOrders.filter((order) =>
+      [order.id, order.customer, order.product, order.status, order.amount].some(matchesQuery)
+    );
+  }, [hasSearch, normalizedQuery]);
+
+  const allowReorder = !hasSearch;
+
+  const searchPlaceholder = useMemo(() => {
+    switch (activeTab) {
+      case 'products':
+        return 'Search products...';
+      case 'categories':
+        return 'Search categories...';
+      case 'portfolio':
+        return 'Search portfolio...';
+      case 'orders':
+        return 'Search orders...';
+      case 'users':
+        return 'Search users...';
+      case 'staff':
+        return 'Search staff...';
+      default:
+        return 'Search...';
+    }
+  }, [activeTab]);
   const sidebarItems = [
     { id: 'dashboard' as TabType, label: 'Dashboard', icon: LayoutDashboard },
     { id: 'products' as TabType, label: 'Products', icon: Package },
@@ -254,11 +331,22 @@ export default function AdminPanelPage() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                 <input
                   type="text"
-                  placeholder="Search..."
+                  placeholder={searchPlaceholder}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm w-64 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100"
+                  className="pl-10 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm w-64 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100"
                 />
+                {hasSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    aria-label="Clear search"
+                    title="Clear search"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
               </div>
 
               {/* Notifications */}
@@ -434,7 +522,7 @@ export default function AdminPanelPage() {
                   </button>
                 </div>
                 <div className="text-sm text-gray-500">
-                  Showing {products.length} products
+                  Showing {filteredProducts.length}{hasSearch && ` of ${products.length}`} products
                 </div>
               </div>
 
@@ -452,67 +540,77 @@ export default function AdminPanelPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {products.map((product) => (
-                      <tr key={product.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="py-4 px-6">
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={product.image}
-                              alt={product.name}
-                              className="w-12 h-12 rounded-lg object-cover"
-                            />
-                            <div>
-                              <p className="font-medium text-gray-900">{product.name}</p>
-                              <p className="text-xs text-gray-500 truncate max-w-xs">{product.description}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-4 px-6">
-                          <span className="px-3 py-1 bg-purple-50 text-purple-600 rounded-full text-xs font-medium capitalize">
-                            {product.category}
-                          </span>
-                        </td>
-                        <td className="py-4 px-6 font-semibold text-gray-900">${product.price}</td>
-                        <td className="py-4 px-6">
-                          <div className="flex flex-wrap gap-1">
-                            {product.tags.slice(0, 2).map((tag) => (
-                              <span key={tag} className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs">
-                                {tag}
-                              </span>
-                            ))}
-                            {product.tags.length > 2 && (
-                              <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs">
-                                +{product.tags.length - 2}
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="py-4 px-6">
-                          <div className="flex items-center gap-1">
-                            <span className="text-yellow-500">★</span>
-                            <span className="text-sm text-gray-900">{product.rating}</span>
-                          </div>
-                        </td>
-                        <td className="py-4 px-6">
-                          <div className="flex items-center justify-end gap-2">
-                            <button 
-                              onClick={() => { setEditingItem(product); setModalOpen('product'); }}
-                              className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-                              title="Edit"
-                            >
-                              <Edit size={18} />
-                            </button>
-                            <button 
-                              onClick={() => { if (confirm('Delete this product?')) deleteProduct(product.id); }}
-                              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                              title="Delete"
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
+                    {filteredProducts.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="py-10 px-6 text-center text-gray-500">
+                          {hasSearch ? 'No products match your search.' : 'No products available.'}
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      filteredProducts.map((product) => (
+                        <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+                          <td className="py-4 px-6">
+                            <div className="flex items-center gap-3">
+                              <img
+                                src={product.image}
+                                alt={product.name}
+                                loading="lazy"
+                                decoding="async"
+                                className="w-12 h-12 rounded-lg object-cover"
+                              />
+                              <div>
+                                <p className="font-medium text-gray-900">{product.name}</p>
+                                <p className="text-xs text-gray-500 truncate max-w-xs">{product.description}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className="px-3 py-1 bg-purple-50 text-purple-600 rounded-full text-xs font-medium capitalize">
+                              {product.category}
+                            </span>
+                          </td>
+                          <td className="py-4 px-6 font-semibold text-gray-900">${product.price}</td>
+                          <td className="py-4 px-6">
+                            <div className="flex flex-wrap gap-1">
+                              {product.tags.slice(0, 2).map((tag) => (
+                                <span key={tag} className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs">
+                                  {tag}
+                                </span>
+                              ))}
+                              {product.tags.length > 2 && (
+                                <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs">
+                                  +{product.tags.length - 2}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-4 px-6">
+                            <div className="flex items-center gap-1">
+                              <span className="text-yellow-500">★</span>
+                              <span className="text-sm text-gray-900">{product.rating}</span>
+                            </div>
+                          </td>
+                          <td className="py-4 px-6">
+                            <div className="flex items-center justify-end gap-2">
+                              <button 
+                                onClick={() => { setEditingItem(product); setModalOpen('product'); }}
+                                className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                                title="Edit"
+                              >
+                                <Edit size={18} />
+                              </button>
+                              <button 
+                                onClick={() => { if (confirm('Delete this product?')) deleteProduct(product.id); }}
+                                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                title="Delete"
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -572,8 +670,11 @@ export default function AdminPanelPage() {
 
               {/* Orders Table */}
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-6 border-b border-gray-100">
+                <div className="p-6 border-b border-gray-100 flex items-center justify-between">
                   <h3 className="font-semibold text-gray-900">All Orders</h3>
+                  <span className="text-sm text-gray-500">
+                    Showing {filteredOrders.length}{hasSearch && ` of ${recentOrders.length}`} orders
+                  </span>
                 </div>
                 <table className="w-full">
                   <thead className="bg-gray-50 border-b border-gray-100">
@@ -587,20 +688,28 @@ export default function AdminPanelPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {recentOrders.map((order) => (
-                      <tr key={order.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="py-4 px-6 font-mono text-sm text-purple-600">{order.id}</td>
-                        <td className="py-4 px-6 font-medium text-gray-900">{order.customer}</td>
-                        <td className="py-4 px-6 text-gray-600">{order.product}</td>
-                        <td className="py-4 px-6 font-semibold text-gray-900">{order.amount}</td>
-                        <td className="py-4 px-6">
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(order.status)}`}>
-                            {order.status}
-                          </span>
+                    {filteredOrders.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="py-10 px-6 text-center text-gray-500">
+                          {hasSearch ? 'No orders match your search.' : 'No orders available.'}
                         </td>
-                        <td className="py-4 px-6 text-gray-500 text-sm">{order.date}</td>
                       </tr>
-                    ))}
+                    ) : (
+                      filteredOrders.map((order) => (
+                        <tr key={order.id} className="hover:bg-gray-50 transition-colors">
+                          <td className="py-4 px-6 font-mono text-sm text-purple-600">{order.id}</td>
+                          <td className="py-4 px-6 font-medium text-gray-900">{order.customer}</td>
+                          <td className="py-4 px-6 text-gray-600">{order.product}</td>
+                          <td className="py-4 px-6 font-semibold text-gray-900">{order.amount}</td>
+                          <td className="py-4 px-6">
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(order.status)}`}>
+                              {order.status}
+                            </span>
+                          </td>
+                          <td className="py-4 px-6 text-gray-500 text-sm">{order.date}</td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -646,7 +755,13 @@ export default function AdminPanelPage() {
                         <span className="w-6 h-6 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center text-sm font-bold">
                           {index + 1}
                         </span>
-                        <img src={product.image} alt={product.name} className="w-10 h-10 rounded-lg object-cover" />
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          loading="lazy"
+                          decoding="async"
+                          className="w-10 h-10 rounded-lg object-cover"
+                        />
                         <div className="flex-1">
                           <p className="text-sm font-medium text-gray-900">{product.name}</p>
                           <p className="text-xs text-gray-500">{productSales[product.id] || 0} sales</p>
@@ -696,42 +811,51 @@ export default function AdminPanelPage() {
                     Add User
                   </button>
                 </div>
+                <p className="text-sm text-gray-500 mb-4">
+                  Showing {filteredUsers.length}{hasSearch && ` of ${users.length}`} users
+                </p>
                 <div className="space-y-4">
-                  {users.map((user) => (
-                    <div key={user.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
-                          {user.name.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900">{user.name}</p>
-                          <p className="text-sm text-gray-500">{user.email}</p>
-                          <p className="text-xs text-gray-400">Last active: {user.lastActive}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          user.status === 'active' ? 'bg-green-50 text-green-600' :
-                          user.status === 'inactive' ? 'bg-gray-100 text-gray-600' :
-                          'bg-red-50 text-red-600'
-                        }`}>
-                          {user.status}
-                        </span>
-                        <button 
-                          onClick={() => { setEditingItem(user); setModalOpen('user'); }}
-                          className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-                        >
-                          <Edit size={18} />
-                        </button>
-                        <button 
-                          onClick={() => { if (confirm('Delete this user?')) deleteUser(user.id); }}
-                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
+                  {filteredUsers.length === 0 ? (
+                    <div className="py-10 text-center text-gray-500 bg-gray-50 rounded-xl">
+                      {hasSearch ? 'No users match your search.' : 'No users available.'}
                     </div>
-                  ))}
+                  ) : (
+                    filteredUsers.map((user) => (
+                      <div key={user.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
+                            {user.name.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900">{user.name}</p>
+                            <p className="text-sm text-gray-500">{user.email}</p>
+                            <p className="text-xs text-gray-400">Last active: {user.lastActive}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            user.status === 'active' ? 'bg-green-50 text-green-600' :
+                            user.status === 'inactive' ? 'bg-gray-100 text-gray-600' :
+                            'bg-red-50 text-red-600'
+                          }`}>
+                            {user.status}
+                          </span>
+                          <button 
+                            onClick={() => { setEditingItem(user); setModalOpen('user'); }}
+                            className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                          >
+                            <Edit size={18} />
+                          </button>
+                          <button 
+                            onClick={() => { if (confirm('Delete this user?')) deleteUser(user.id); }}
+                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>
@@ -751,47 +875,56 @@ export default function AdminPanelPage() {
                     Add Staff
                   </button>
                 </div>
+                <p className="text-sm text-gray-500 mb-4">
+                  Showing {filteredStaff.length}{hasSearch && ` of ${staff.length}`} staff members
+                </p>
                 <div className="space-y-4">
-                  {staff.map((member) => (
-                    <div key={member.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold">
-                          {member.name.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900">{member.name}</p>
-                          <p className="text-sm text-gray-500">{member.email}</p>
-                          <p className="text-xs text-gray-400">Last active: {member.lastActive}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${
-                          member.role === 'admin' ? 'bg-purple-50 text-purple-600' :
-                          member.role === 'moderator' ? 'bg-blue-50 text-blue-600' :
-                          'bg-green-50 text-green-600'
-                        }`}>
-                          {member.role}
-                        </span>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          member.status === 'active' ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-600'
-                        }`}>
-                          {member.status}
-                        </span>
-                        <button 
-                          onClick={() => { setEditingItem(member); setModalOpen('staff'); }}
-                          className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-                        >
-                          <Edit size={18} />
-                        </button>
-                        <button 
-                          onClick={() => { if (confirm('Delete this staff member?')) deleteStaff(member.id); }}
-                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
+                  {filteredStaff.length === 0 ? (
+                    <div className="py-10 text-center text-gray-500 bg-gray-50 rounded-xl">
+                      {hasSearch ? 'No staff match your search.' : 'No staff members available.'}
                     </div>
-                  ))}
+                  ) : (
+                    filteredStaff.map((member) => (
+                      <div key={member.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold">
+                            {member.name.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900">{member.name}</p>
+                            <p className="text-sm text-gray-500">{member.email}</p>
+                            <p className="text-xs text-gray-400">Last active: {member.lastActive}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${
+                            member.role === 'admin' ? 'bg-purple-50 text-purple-600' :
+                            member.role === 'moderator' ? 'bg-blue-50 text-blue-600' :
+                            'bg-green-50 text-green-600'
+                          }`}>
+                            {member.role}
+                          </span>
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            member.status === 'active' ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-600'
+                          }`}>
+                            {member.status}
+                          </span>
+                          <button 
+                            onClick={() => { setEditingItem(member); setModalOpen('staff'); }}
+                            className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                          >
+                            <Edit size={18} />
+                          </button>
+                          <button 
+                            onClick={() => { if (confirm('Delete this staff member?')) deleteStaff(member.id); }}
+                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>
@@ -813,80 +946,92 @@ export default function AdminPanelPage() {
                   Add Category
                 </button>
               </div>
+              <p className="text-sm text-gray-500">
+                Showing {filteredCategories.length}{hasSearch && ` of ${categories.length}`} categories
+              </p>
 
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="divide-y divide-gray-100">
-                  {categories.sort((a, b) => a.order - b.order).map((category, index) => (
-                    <div key={category.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
-                      <div className="flex items-center gap-4">
-                        <button className="p-1 text-gray-400 hover:text-gray-600 cursor-grab">
-                          <GripVertical size={20} />
-                        </button>
-                        <span className="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center text-sm font-bold">
-                          {index + 1}
-                        </span>
-                        <div>
-                          <p className="font-medium text-gray-900">{category.name}</p>
-                          <p className="text-xs text-gray-500">Slug: {category.slug}</p>
+                  {filteredCategories.length === 0 ? (
+                    <div className="py-10 text-center text-gray-500">
+                      {hasSearch ? 'No categories match your search.' : 'No categories available.'}
+                    </div>
+                  ) : (
+                    filteredCategories.map((category, index) => (
+                      <div key={category.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center gap-4">
+                          <button
+                            className="p-1 text-gray-400 hover:text-gray-600 cursor-grab disabled:opacity-50"
+                            disabled={!allowReorder}
+                          >
+                            <GripVertical size={20} />
+                          </button>
+                          <span className="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center text-sm font-bold">
+                            {index + 1}
+                          </span>
+                          <div>
+                            <p className="font-medium text-gray-900">{category.name}</p>
+                            <p className="text-xs text-gray-500">Slug: {category.slug}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-500 mr-4">
+                            {products.filter(p => p.category === category.slug).length} products
+                          </span>
+                          <button 
+                            onClick={() => { setEditingItem(category); setModalOpen('category'); }}
+                            className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                          >
+                            <Edit size={18} />
+                          </button>
+                          {category.slug !== 'all' && (
+                            <button 
+                              onClick={() => { if (confirm('Delete this category?')) deleteCategory(category.id); }}
+                              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => {
+                              if (index > 0) {
+                                const newCategories = [...categories];
+                                const current = newCategories.find(c => c.id === category.id)!;
+                                const prev = newCategories.find(c => c.order === category.order - 1);
+                                if (prev) {
+                                  current.order -= 1;
+                                  prev.order += 1;
+                                  reorderCategories(newCategories);
+                                }
+                              }
+                            }}
+                            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+                            disabled={!allowReorder || index === 0}
+                          >
+                            ↑
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (index < filteredCategories.length - 1) {
+                                const newCategories = [...categories];
+                                const current = newCategories.find(c => c.id === category.id)!;
+                                const next = newCategories.find(c => c.order === category.order + 1);
+                                if (next) {
+                                  current.order += 1;
+                                  next.order -= 1;
+                                  reorderCategories(newCategories);
+                                }
+                              }
+                            }}
+                            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+                            disabled={!allowReorder || index === filteredCategories.length - 1}
+                          >
+                            ↓
+                          </button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-500 mr-4">
-                          {products.filter(p => p.category === category.slug).length} products
-                        </span>
-                        <button 
-                          onClick={() => { setEditingItem(category); setModalOpen('category'); }}
-                          className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-                        >
-                          <Edit size={18} />
-                        </button>
-                        {category.slug !== 'all' && (
-                          <button 
-                            onClick={() => { if (confirm('Delete this category?')) deleteCategory(category.id); }}
-                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        )}
-                        <button
-                          onClick={() => {
-                            if (index > 0) {
-                              const newCategories = [...categories];
-                              const current = newCategories.find(c => c.id === category.id)!;
-                              const prev = newCategories.find(c => c.order === category.order - 1);
-                              if (prev) {
-                                current.order -= 1;
-                                prev.order += 1;
-                                reorderCategories(newCategories);
-                              }
-                            }
-                          }}
-                          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
-                          disabled={index === 0}
-                        >
-                          ↑
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (index < categories.length - 1) {
-                              const newCategories = [...categories];
-                              const current = newCategories.find(c => c.id === category.id)!;
-                              const next = newCategories.find(c => c.order === category.order + 1);
-                              if (next) {
-                                current.order += 1;
-                                next.order -= 1;
-                                reorderCategories(newCategories);
-                              }
-                            }
-                          }}
-                          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
-                          disabled={index === categories.length - 1}
-                        >
-                          ↓
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </div>
             </div>
@@ -908,80 +1053,91 @@ export default function AdminPanelPage() {
                   Add Portfolio Item
                 </button>
               </div>
+              <p className="text-sm text-gray-500">
+                Showing {filteredPortfolio.length}{hasSearch && ` of ${portfolioItems.length}`} items
+              </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {portfolioItems.map((item, index) => (
-                  <div key={item.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group">
-                    <div className="relative aspect-[4/3]">
-                      <img
-                        src={item.image}
-                        alt={item.title}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                        <button 
-                          onClick={() => { setEditingItem(item); setModalOpen('portfolio'); }}
-                          className="p-3 bg-white rounded-xl text-gray-700 hover:text-purple-600 transition-colors"
-                        >
-                          <Edit size={20} />
-                        </button>
-                        <button 
-                          onClick={() => { if (confirm('Delete this portfolio item?')) deletePortfolioItem(item.id); }}
-                          className="p-3 bg-white rounded-xl text-gray-700 hover:text-red-600 transition-colors"
-                        >
-                          <Trash2 size={20} />
-                        </button>
-                      </div>
-                      <span className={`absolute top-3 right-3 px-2 py-1 rounded-lg text-xs font-medium ${
-                        item.gridSize === 'large' ? 'bg-purple-500 text-white' :
-                        item.gridSize === 'medium' ? 'bg-blue-500 text-white' :
-                        'bg-gray-500 text-white'
-                      }`}>
-                        {item.gridSize}
-                      </span>
-                      <span className="absolute top-3 left-3 px-2 py-1 bg-black/50 text-white rounded-lg text-xs font-medium">
-                        #{index + 1}
-                      </span>
-                    </div>
-                    <div className="p-4">
-                      <h4 className="font-medium text-gray-900 mb-1">{item.title}</h4>
-                      <p className="text-sm text-gray-500 line-clamp-2">{item.description}</p>
-                      <div className="flex items-center justify-between mt-3">
-                        <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs capitalize">
-                          {item.category}
+                {filteredPortfolio.length === 0 ? (
+                  <div className="col-span-full py-10 text-center text-gray-500 bg-white rounded-2xl border border-gray-100">
+                    {hasSearch ? 'No portfolio items match your search.' : 'No portfolio items available.'}
+                  </div>
+                ) : (
+                  filteredPortfolio.map((item, index) => (
+                    <div key={item.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group">
+                      <div className="relative aspect-[4/3]">
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          loading="lazy"
+                          decoding="async"
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                          <button 
+                            onClick={() => { setEditingItem(item); setModalOpen('portfolio'); }}
+                            className="p-3 bg-white rounded-xl text-gray-700 hover:text-purple-600 transition-colors"
+                          >
+                            <Edit size={20} />
+                          </button>
+                          <button 
+                            onClick={() => { if (confirm('Delete this portfolio item?')) deletePortfolioItem(item.id); }}
+                            className="p-3 bg-white rounded-xl text-gray-700 hover:text-red-600 transition-colors"
+                          >
+                            <Trash2 size={20} />
+                          </button>
+                        </div>
+                        <span className={`absolute top-3 right-3 px-2 py-1 rounded-lg text-xs font-medium ${
+                          item.gridSize === 'large' ? 'bg-purple-500 text-white' :
+                          item.gridSize === 'medium' ? 'bg-blue-500 text-white' :
+                          'bg-gray-500 text-white'
+                        }`}>
+                          {item.gridSize}
                         </span>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => {
-                              if (index > 0) {
-                                const newItems = [...portfolioItems];
-                                [newItems[index], newItems[index - 1]] = [newItems[index - 1], newItems[index]];
-                                reorderPortfolio(newItems);
-                              }
-                            }}
-                            className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50"
-                            disabled={index === 0}
-                          >
-                            ↑
-                          </button>
-                          <button
-                            onClick={() => {
-                              if (index < portfolioItems.length - 1) {
-                                const newItems = [...portfolioItems];
-                                [newItems[index], newItems[index + 1]] = [newItems[index + 1], newItems[index]];
-                                reorderPortfolio(newItems);
-                              }
-                            }}
-                            className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50"
-                            disabled={index === portfolioItems.length - 1}
-                          >
-                            ↓
-                          </button>
+                        <span className="absolute top-3 left-3 px-2 py-1 bg-black/50 text-white rounded-lg text-xs font-medium">
+                          #{index + 1}
+                        </span>
+                      </div>
+                      <div className="p-4">
+                        <h4 className="font-medium text-gray-900 mb-1">{item.title}</h4>
+                        <p className="text-sm text-gray-500 line-clamp-2">{item.description}</p>
+                        <div className="flex items-center justify-between mt-3">
+                          <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs capitalize">
+                            {item.category}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => {
+                                if (index > 0) {
+                                  const newItems = [...portfolioItems];
+                                  [newItems[index], newItems[index - 1]] = [newItems[index - 1], newItems[index]];
+                                  reorderPortfolio(newItems);
+                                }
+                              }}
+                              className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50"
+                              disabled={!allowReorder || index === 0}
+                            >
+                              ↑
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (index < filteredPortfolio.length - 1) {
+                                  const newItems = [...portfolioItems];
+                                  [newItems[index], newItems[index + 1]] = [newItems[index + 1], newItems[index]];
+                                  reorderPortfolio(newItems);
+                                }
+                              }}
+                              className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50"
+                              disabled={!allowReorder || index === filteredPortfolio.length - 1}
+                            >
+                              ↓
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           )}

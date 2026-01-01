@@ -10,6 +10,10 @@ import {
   CheckoutPage,
   OrderSuccessPage,
   AdminPanelPage,
+  PrivacyPolicyPage,
+  TermsOfServicePage,
+  RefundPolicyPage,
+  NotFoundPage,
 } from './pages';
 
 function App() {
@@ -28,6 +32,10 @@ function App() {
           <Route path="admin/panel" element={<AdminPanelPage />} />
           {/* Catch-all route for admin subpaths */}
           <Route path="admin/panel/*" element={<AdminPanelPage />} />
+          <Route path="privacy" element={<PrivacyPolicyPage />} />
+          <Route path="terms" element={<TermsOfServicePage />} />
+          <Route path="refunds" element={<RefundPolicyPage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

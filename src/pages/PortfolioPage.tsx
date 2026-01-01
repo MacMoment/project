@@ -41,6 +41,8 @@ export default function PortfolioPage() {
                   <img
                     src={item.image}
                     alt={item.title}
+                    loading="lazy"
+                    decoding="async"
                     className={`w-full object-cover transition-transform duration-500 group-hover:scale-105 ${
                       item.gridSize === 'large'
                         ? 'aspect-[4/3]'
@@ -96,6 +98,8 @@ export default function PortfolioPage() {
             <img
               src={selectedItem.image}
               alt={selectedItem.title}
+              loading="eager"
+              decoding="async"
               className="max-w-full max-h-[80vh] object-contain rounded-lg"
             />
             <div className="mt-4 text-center">
