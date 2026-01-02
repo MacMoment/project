@@ -8,6 +8,11 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children?: ReactNode;
 }
 
+type AsChildProps = {
+  className?: string;
+  [key: string]: unknown;
+};
+
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className = '', variant = 'primary', size = 'md', asChild, children, ...props }, ref) => {
     const baseStyles = 'inline-flex items-center justify-center font-medium transition-all duration-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
@@ -28,7 +33,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const combinedClassName = `${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`;
 
     // If asChild is true and children is a valid element, clone it with button styles
-    if (asChild && children && isValidElement(children)) {
+    if (asChild && children && isValidElement<AsChildProps>(children)) {
       const childClassName = children.props.className ?? '';
       return cloneElement(children, {
         className: `${combinedClassName} ${childClassName}`.trim(),
