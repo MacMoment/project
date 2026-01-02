@@ -34,14 +34,18 @@ const features = [
 
 export function FloatingCards() {
   return (
-    <section className="py-24 bg-white">
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+    <section className="relative py-24 bg-gradient-to-br from-[#0c0b16] via-[#151027] to-[#0b0f1f] overflow-hidden">
+      <div className="absolute inset-0">
+        <div className="absolute top-12 left-20 w-72 h-72 bg-purple-500/20 rounded-full blur-[120px]" />
+        <div className="absolute bottom-12 right-16 w-80 h-80 bg-pink-500/15 rounded-full blur-[140px]" />
+      </div>
+      <div className="relative max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
         {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
             Why Choose Academy Studios
           </h2>
-          <p className="text-lg text-gray-600 leading-relaxed">
+          <p className="text-lg text-gray-300 leading-relaxed">
             We deliver exceptional quality and service for all your virtual building needs.
           </p>
         </div>
@@ -53,20 +57,21 @@ export function FloatingCards() {
             return (
               <div
                 key={feature.title}
-                className="group p-6 rounded-2xl bg-gray-50 hover:bg-white hover:shadow-xl hover:shadow-gray-100 border border-transparent hover:border-gray-100 transition-all duration-300"
+                className="group relative p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl shadow-[0_20px_60px_-40px_rgba(15,10,26,0.9)] hover:bg-white/10 hover:border-white/20 hover:-translate-y-1 transition-all duration-300"
               >
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-5 shadow-lg`}>
+                <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-white/10 via-transparent to-white/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                <div className={`relative w-12 h-12 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-5 shadow-lg`}>
                   <Icon size={24} className="text-white" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                <h3 className="relative text-lg font-semibold text-white mb-3">
                   {feature.title}
                 </h3>
-                <p className="text-gray-600 text-sm leading-relaxed mb-4">
+                <p className="relative text-gray-300 text-sm leading-relaxed mb-4">
                   {feature.description}
                 </p>
                 <Link 
                   to="/services" 
-                  className="inline-flex items-center gap-1 text-sm font-medium text-purple-600 hover:text-purple-700 transition-colors"
+                  className="relative inline-flex items-center gap-1 text-sm font-medium text-purple-200 hover:text-white transition-colors"
                 >
                   Learn more
                   <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
