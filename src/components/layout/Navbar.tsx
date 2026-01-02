@@ -83,7 +83,7 @@ export function Navbar() {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? 'glass shadow-sm border-b border-gray-100/50'
+          ? 'glass shadow-lg shadow-slate-200/40 border-b border-white/40'
           : hasDarkHero 
             ? 'bg-transparent' 
             : 'bg-white'
@@ -142,7 +142,7 @@ export function Navbar() {
               className={`hidden md:flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium border transition-all ${
                 isDarkMode 
                   ? 'text-white border-white/20 hover:bg-white/10'
-                  : 'text-purple-600 border-purple-200 hover:bg-purple-50'
+                  : 'text-purple-600 border-purple-200 bg-white/70 hover:bg-white'
               }`}
             >
               Builders Academy

@@ -57,7 +57,7 @@ export function FloatingCards() {
             return (
               <div
                 key={feature.title}
-                className="group relative p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl shadow-[0_20px_60px_-40px_rgba(15,10,26,0.9)] hover:bg-white/10 hover:border-white/20 hover:-translate-y-1 transition-all duration-300"
+                className="group relative p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl shadow-[0_25px_70px_-45px_rgba(15,10,26,0.95)] hover:bg-white/10 hover:border-white/25 hover:-translate-y-1 hover:shadow-[0_35px_80px_-55px_rgba(15,10,26,0.95)] transition-all duration-300"
               >
                 <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-white/10 via-transparent to-white/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                 <div className={`relative w-12 h-12 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-5 shadow-lg`}>

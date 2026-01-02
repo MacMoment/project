@@ -8,11 +8,18 @@ export function FeaturedProducts() {
   const featured = products.filter((p) => p.featured).slice(0, 4);
 
   return (
-    <section className="py-24 bg-white">
+    <section className="relative py-24 bg-gradient-to-b from-white via-slate-50 to-white overflow-hidden">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-20 right-10 h-56 w-56 rounded-full bg-purple-200/40 blur-[120px]" />
+        <div className="absolute bottom-10 left-10 h-48 w-48 rounded-full bg-pink-200/40 blur-[110px]" />
+      </div>
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
         {/* Section Header */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
+        <div className="relative flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
           <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-purple-500 mb-3">
+              Curated Collection
+            </p>
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
               Featured Assets
             </h2>

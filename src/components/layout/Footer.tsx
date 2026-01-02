@@ -22,8 +22,12 @@ const footerLinks = {
 
 export function Footer() {
   return (
-    <footer className="bg-gray-900 text-white mt-auto">
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-16">
+    <footer className="relative bg-gradient-to-b from-gray-900 via-[#0f1324] to-[#0a0c18] text-white mt-auto overflow-hidden">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-24 right-10 h-60 w-60 rounded-full bg-purple-500/10 blur-[120px]" />
+        <div className="absolute bottom-0 left-12 h-56 w-56 rounded-full bg-pink-500/10 blur-[120px]" />
+      </div>
+      <div className="relative max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-16">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
@@ -114,7 +118,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="border-t border-white/10 mt-12 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-gray-500 text-sm">
             © {new Date().getFullYear()} Academy Studios. All rights reserved.
           </p>
@@ -147,7 +151,7 @@ export function Footer() {
         </div>
         
         {/* Concealed Admin Access */}
-        <div className="mt-8 pt-4 border-t border-gray-800/50 text-center">
+        <div className="mt-8 pt-4 border-t border-white/10 text-center">
           <div className="flex items-center justify-center gap-4 text-xs">
             <Link
               to="/account"
