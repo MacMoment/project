@@ -123,6 +123,7 @@ export default function AdminPanelPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [modalOpen, setModalOpen] = useState<ModalType>(null);
   const [editingItem, setEditingItem] = useState<Product | Category | PortfolioItem | User | Staff | Invoice | null>(null);
+  const [staffSeed, setStaffSeed] = useState<Pick<Staff, 'name' | 'email'> | null>(null);
   const [invoiceForm, setInvoiceForm] = useState({
     customerName: '',
     customerEmail: '',
@@ -165,7 +166,7 @@ export default function AdminPanelPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 pt-24 pb-16 flex justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-purple-50 pt-24 pb-16 flex justify-center">
         <AuthPanel mode="admin" />
       </div>
     );
@@ -173,10 +174,10 @@ export default function AdminPanelPage() {
 
   if (user.role !== 'admin') {
     return (
-      <div className="min-h-screen bg-gray-50 pt-24 pb-16">
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-purple-50 pt-24 pb-16">
         <div className="max-w-3xl mx-auto px-6 sm:px-8 lg:px-12">
-          <div className="bg-white border border-gray-100 rounded-3xl p-10 text-center shadow-lg">
-            <div className="w-14 h-14 rounded-2xl bg-purple-100 text-purple-600 mx-auto flex items-center justify-center mb-4">
+          <div className="bg-white border border-gray-100 rounded-3xl p-10 text-center shadow-xl">
+            <div className="w-14 h-14 rounded-2xl bg-purple-100 text-purple-600 mx-auto flex items-center justify-center mb-4 shadow-inner">
               <Shield size={24} />
             </div>
             <h1 className="text-2xl font-bold text-gray-900">Admin access required</h1>
@@ -246,6 +247,11 @@ export default function AdminPanelPage() {
       [member.name, member.email, member.role, member.status].some(matchesQuery)
     );
   }, [hasSearch, normalizedQuery, staff]);
+
+  const staffEmails = useMemo(
+    () => new Set(staff.map((member) => member.email.toLowerCase())),
+    [staff]
+  );
 
   const filteredOrders = useMemo(() => {
     if (!hasSearch) return recentOrders;
@@ -927,41 +933,68 @@ export default function AdminPanelPage() {
                       {hasSearch ? 'No users match your search.' : 'No users available.'}
                     </div>
                   ) : (
-                    filteredUsers.map((user) => (
-                      <div key={user.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
-                            {user.name.charAt(0)}
+                    filteredUsers.map((user) => {
+                      const isStaffMember = staffEmails.has(user.email.toLowerCase());
+                      return (
+                        <div
+                          key={user.id}
+                          className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition"
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold shadow-md">
+                              {user.name.charAt(0)}
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-900">{user.name}</p>
+                              <p className="text-sm text-gray-500">{user.email}</p>
+                              <p className="text-xs text-gray-400">Last active: {user.lastActive}</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-medium text-gray-900">{user.name}</p>
-                            <p className="text-sm text-gray-500">{user.email}</p>
-                            <p className="text-xs text-gray-400">Last active: {user.lastActive}</p>
+                          <div className="flex flex-wrap items-center gap-3">
+                            <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-600">
+                              customer
+                            </span>
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              user.status === 'active' ? 'bg-green-50 text-green-600' :
+                              user.status === 'inactive' ? 'bg-gray-100 text-gray-600' :
+                              'bg-red-50 text-red-600'
+                            }`}>
+                              {user.status}
+                            </span>
+                            <button
+                              type="button"
+                              title={isStaffMember ? 'Already a staff member' : 'Promote to staff'}
+                              onClick={() => {
+                                if (isStaffMember) return;
+                                setStaffSeed({ name: user.name, email: user.email });
+                                setEditingItem(null);
+                                setModalOpen('staff');
+                              }}
+                              className={`p-2 rounded-lg transition-colors ${
+                                isStaffMember
+                                  ? 'text-gray-300 cursor-not-allowed'
+                                  : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'
+                              }`}
+                              disabled={isStaffMember}
+                            >
+                              <UserCog size={18} />
+                            </button>
+                            <button 
+                              onClick={() => { setEditingItem(user); setModalOpen('user'); }}
+                              className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                            >
+                              <Edit size={18} />
+                            </button>
+                            <button 
+                              onClick={() => { if (confirm('Delete this user?')) deleteUser(user.id); }}
+                              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            >
+                              <Trash2 size={18} />
+                            </button>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            user.status === 'active' ? 'bg-green-50 text-green-600' :
-                            user.status === 'inactive' ? 'bg-gray-100 text-gray-600' :
-                            'bg-red-50 text-red-600'
-                          }`}>
-                            {user.status}
-                          </span>
-                          <button 
-                            onClick={() => { setEditingItem(user); setModalOpen('user'); }}
-                            className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-                          >
-                            <Edit size={18} />
-                          </button>
-                          <button 
-                            onClick={() => { if (confirm('Delete this user?')) deleteUser(user.id); }}
-                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                 </div>
               </div>
@@ -975,7 +1008,7 @@ export default function AdminPanelPage() {
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="font-semibold text-gray-900">Staff Account Management</h3>
                   <button 
-                    onClick={() => { setEditingItem(null); setModalOpen('staff'); }}
+                    onClick={() => { setEditingItem(null); setStaffSeed(null); setModalOpen('staff'); }}
                     className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-medium text-sm"
                   >
                     <Plus size={16} />
@@ -992,9 +1025,12 @@ export default function AdminPanelPage() {
                     </div>
                   ) : (
                     filteredStaff.map((member) => (
-                      <div key={member.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                      <div
+                        key={member.id}
+                        className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition"
+                      >
                         <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold">
+                          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold shadow-md">
                             {member.name.charAt(0)}
                           </div>
                           <div>
@@ -1003,7 +1039,7 @@ export default function AdminPanelPage() {
                             <p className="text-xs text-gray-400">Last active: {member.lastActive}</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-wrap items-center gap-3">
                           <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${
                             member.role === 'admin' ? 'bg-purple-50 text-purple-600' :
                             member.role === 'moderator' ? 'bg-blue-50 text-blue-600' :
@@ -1017,7 +1053,7 @@ export default function AdminPanelPage() {
                             {member.status}
                           </span>
                           <button 
-                            onClick={() => { setEditingItem(member); setModalOpen('staff'); }}
+                            onClick={() => { setEditingItem(member); setStaffSeed(null); setModalOpen('staff'); }}
                             className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
                           >
                             <Edit size={18} />
@@ -1565,7 +1601,8 @@ export default function AdminPanelPage() {
       {modalOpen === 'staff' && (
         <StaffModal
           staff={editingItem as Staff | null}
-          onClose={() => { setModalOpen(null); setEditingItem(null); }}
+          prefill={staffSeed}
+          onClose={() => { setModalOpen(null); setEditingItem(null); setStaffSeed(null); }}
           onSave={(staff) => {
             if (editingItem) {
               updateStaff(editingItem.id, staff);
@@ -1574,6 +1611,7 @@ export default function AdminPanelPage() {
             }
             setModalOpen(null);
             setEditingItem(null);
+            setStaffSeed(null);
           }}
         />
       )}
@@ -2025,16 +2063,20 @@ function UserModal({
 // Staff Modal Component
 function StaffModal({
   staff,
+  prefill,
   onClose,
   onSave
 }: {
   staff: Staff | null;
+  prefill: Pick<Staff, 'name' | 'email'> | null;
   onClose: () => void;
   onSave: (staff: Partial<Staff>) => void;
 }) {
+  const initialName = staff?.name || prefill?.name || '';
+  const initialEmail = staff?.email || prefill?.email || '';
   const [formData, setFormData] = useState({
-    name: staff?.name || '',
-    email: staff?.email || '',
+    name: initialName,
+    email: initialEmail,
     status: staff?.status || 'active' as 'active' | 'inactive',
     role: staff?.role || 'support' as 'admin' | 'moderator' | 'support',
     lastActive: staff?.lastActive || 'Just now',
@@ -2057,6 +2099,11 @@ function StaffModal({
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {prefill && !staff && (
+            <div className="rounded-xl border border-blue-100 bg-blue-50/70 px-4 py-3 text-xs text-blue-700">
+              Promoting a customer account to staff. Update the role before saving.
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
             <input
