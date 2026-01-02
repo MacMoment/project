@@ -117,8 +117,6 @@ const initialUsers: User[] = [
 // Mock initial staff
 const initialStaff: Staff[] = [
   { id: '1', name: 'John Admin', email: 'john@academystudios.com', status: 'active', role: 'admin', createdAt: '2024-01-01', lastActive: 'Now' },
-  { id: '2', name: 'Sarah Support', email: 'sarah@academystudios.com', status: 'active', role: 'support', createdAt: '2024-03-15', lastActive: '5 min ago' },
-  { id: '3', name: 'Mike Moderator', email: 'mike@academystudios.com', status: 'active', role: 'moderator', createdAt: '2024-06-01', lastActive: '1 hour ago' },
 ];
 
 const initialPurchases: Purchase[] = [
