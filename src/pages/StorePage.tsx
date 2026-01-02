@@ -57,9 +57,13 @@ export default function StorePage() {
   return (
     <>
       {/* Hero */}
-      <section className="pt-28 pb-12 bg-gradient-to-br from-[#0f0a1a] via-purple-900 to-indigo-900">
+      <section className="relative pt-28 pb-14 bg-gradient-to-br from-[#0b0a16] via-[#1c1638] to-[#0a0d1f] overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute top-12 right-10 w-72 h-72 bg-purple-500/25 rounded-full blur-[120px]" />
+          <div className="absolute bottom-8 left-12 w-64 h-64 bg-pink-500/20 rounded-full blur-[120px]" />
+        </div>
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
-          <div className="text-center max-w-2xl mx-auto">
+          <div className="relative text-center max-w-2xl mx-auto">
             <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
               Asset Store
             </h1>
@@ -75,7 +79,7 @@ export default function StorePage() {
                 placeholder="Search assets..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3.5 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300 focus:outline-none focus:border-white/40 transition-all"
+                className="w-full pl-12 pr-4 py-3.5 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300 focus:outline-none focus:border-white/40 focus:ring-2 focus:ring-white/20 transition-all shadow-lg shadow-purple-900/30 backdrop-blur"
               />
             </div>
           </div>
@@ -83,7 +87,7 @@ export default function StorePage() {
       </section>
 
       {/* Products */}
-      <section className="py-12 bg-gray-50">
+      <section className="py-12 bg-gradient-to-b from-slate-50 via-white to-slate-50">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
           {/* Filters */}
           <div className="mb-10">
@@ -111,7 +115,7 @@ export default function StorePage() {
       </section>
 
       {/* Custom Order Section */}
-      <section id="custom" className="py-20 bg-white">
+      <section id="custom" className="py-20 bg-gradient-to-b from-white via-slate-50 to-white">
         <div className="max-w-xl mx-auto px-6 sm:px-8 lg:px-12">
           <div className="text-center mb-10">
             <h2 className="text-3xl font-bold text-gray-900 mb-3">
@@ -122,7 +126,7 @@ export default function StorePage() {
             </p>
           </div>
 
-          <div className="bg-gray-50 rounded-2xl p-8">
+          <div className="bg-white rounded-2xl p-8 shadow-xl shadow-slate-200/60 border border-slate-100">
             <CustomOrderForm />
           </div>
         </div>

@@ -3,7 +3,7 @@ import { ArrowRight, Star, CheckCircle } from 'lucide-react';
 
 export function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center bg-[#0f0a1a] overflow-hidden">
+    <section className="relative min-h-screen flex items-center bg-gradient-to-br from-[#0b0a16] via-[#15102a] to-[#05040b] overflow-hidden">
       {/* Animated background shapes */}
       <div className="absolute inset-0">
         {/* Gradient orbs */}
@@ -19,7 +19,7 @@ export function Hero() {
 
       {/* Content */}
       <div className="relative w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-32 lg:py-40">
-        <div className="max-w-2xl rounded-3xl border border-white/10 bg-white/5 backdrop-blur-2xl p-8 sm:p-10 shadow-[0_30px_80px_-50px_rgba(255,255,255,0.45)]">
+        <div className="max-w-2xl rounded-3xl border border-white/10 bg-white/5 backdrop-blur-2xl p-8 sm:p-10 shadow-[0_30px_80px_-50px_rgba(255,255,255,0.45)] ring-1 ring-white/5">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 mb-8 shadow-[0_10px_30px_-20px_rgba(255,255,255,0.6)]">
             <span className="relative flex h-2 w-2">
@@ -63,18 +63,18 @@ export function Hero() {
           <div className="flex flex-wrap items-center gap-8 sm:gap-12 py-8 border-t border-white/10">
             <div>
               <p className="text-3xl sm:text-4xl font-bold text-white">500+</p>
-              <p className="text-sm text-gray-500 mt-1">Assets Created</p>
+              <p className="text-sm text-slate-300/70 mt-1">Assets Created</p>
             </div>
             <div>
               <p className="text-3xl sm:text-4xl font-bold text-white">200+</p>
-              <p className="text-sm text-gray-500 mt-1">Happy Clients</p>
+              <p className="text-sm text-slate-300/70 mt-1">Happy Clients</p>
             </div>
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="text-3xl sm:text-4xl font-bold text-white">4.9</span>
                 <Star size={20} className="fill-yellow-400 text-yellow-400" />
               </div>
-              <p className="text-sm text-gray-500 mt-1">Average Rating</p>
+              <p className="text-sm text-slate-300/70 mt-1">Average Rating</p>
             </div>
           </div>
 

@@ -42,7 +42,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const style = getCategoryStyle(product.category);
 
   return (
-    <div className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-purple-200 hover:shadow-lg transition-all duration-300">
+    <div className="group bg-gradient-to-b from-white via-white to-slate-50/90 rounded-2xl overflow-hidden border border-gray-100/80 hover:border-purple-200/80 hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
       {/* Image Container */}
       <div className={`relative aspect-[4/3] ${style.bg} overflow-hidden`}>
         {/* Placeholder */}
@@ -65,12 +65,12 @@ export function ProductCard({ product }: ProductCardProps) {
         )}
 
         {/* Category Badge */}
-        <span className="absolute top-3 left-3 px-2.5 py-1 bg-white/90 backdrop-blur-sm rounded-lg text-xs font-medium text-gray-700 capitalize">
+        <span className="absolute top-3 left-3 px-2.5 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-medium text-gray-700 capitalize shadow-sm">
           {product.category}
         </span>
 
         {/* Rating Badge */}
-        <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 bg-white/90 backdrop-blur-sm rounded-lg">
+        <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 bg-white/90 backdrop-blur-sm rounded-full shadow-sm">
           <Star size={12} className="fill-yellow-400 text-yellow-400" />
           <span className="text-xs font-semibold text-gray-700">{product.rating}</span>
         </div>
@@ -92,7 +92,7 @@ export function ProductCard({ product }: ProductCardProps) {
           </span>
           <button
             onClick={handleAddToCart}
-            className="flex items-center gap-1.5 px-4 py-2.5 bg-purple-600 text-white text-sm font-medium rounded-xl hover:bg-purple-700 transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-500 text-white text-sm font-medium rounded-xl shadow-lg shadow-purple-500/20 hover:from-purple-500 hover:to-pink-400 transition-all"
             aria-label={`Add ${product.name} to cart`}
           >
             <ShoppingCart size={16} />

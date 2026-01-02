@@ -24,7 +24,7 @@ export function Testimonials() {
           {testimonials.map((testimonial) => (
             <div
               key={testimonial.id}
-              className="group relative rounded-2xl p-6 bg-white/5 border border-white/10 backdrop-blur-xl shadow-[0_20px_60px_-40px_rgba(15,10,26,0.9)] hover:bg-white/10 hover:border-white/20 transition-all duration-300"
+              className="group relative rounded-2xl p-6 bg-white/5 border border-white/10 backdrop-blur-xl shadow-[0_25px_70px_-45px_rgba(15,10,26,0.95)] hover:bg-white/10 hover:border-white/25 hover:-translate-y-1 transition-all duration-300"
             >
               <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-white/10 via-transparent to-white/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
               {/* Rating */}
