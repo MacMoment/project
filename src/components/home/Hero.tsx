@@ -19,9 +19,9 @@ export function Hero() {
 
       {/* Content */}
       <div className="relative w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-32 lg:py-40">
-        <div className="max-w-2xl">
+        <div className="max-w-2xl rounded-3xl border border-white/10 bg-white/5 backdrop-blur-2xl p-8 sm:p-10 shadow-[0_30px_80px_-50px_rgba(255,255,255,0.45)]">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 mb-8 shadow-[0_10px_30px_-20px_rgba(255,255,255,0.6)]">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400"></span>
@@ -81,7 +81,7 @@ export function Hero() {
           {/* Trust badges */}
           <div className="flex flex-wrap items-center gap-6 mt-6">
             {['Instant Download', 'Secure Payment', '24/7 Support'].map((item) => (
-              <div key={item} className="flex items-center gap-2 text-gray-500">
+              <div key={item} className="flex items-center gap-2 text-gray-400">
                 <CheckCircle size={16} className="text-green-500" />
                 <span className="text-sm">{item}</span>
               </div>
