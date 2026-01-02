@@ -20,9 +20,13 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
+  ClipboardList,
+  CheckSquare,
+  Megaphone,
   Zap,
   Globe,
   Shield,
+  ShieldAlert,
   FileText,
   Tag,
   Image,
@@ -40,7 +44,18 @@ import { useAdminStore, type User, type Staff, type Invoice } from '../store/adm
 import { useAuthStore } from '../store/authStore';
 import type { Product, Category, PortfolioItem } from '../types';
 
-type TabType = 'dashboard' | 'products' | 'categories' | 'portfolio' | 'orders' | 'analytics' | 'users' | 'staff' | 'billing' | 'settings';
+type TabType =
+  | 'dashboard'
+  | 'products'
+  | 'categories'
+  | 'portfolio'
+  | 'orders'
+  | 'analytics'
+  | 'users'
+  | 'staff'
+  | 'billing'
+  | 'operations'
+  | 'settings';
 
 // Modal types
 type ModalType = 'product' | 'category' | 'portfolio' | 'user' | 'staff' | 'invoice' | null;
@@ -116,6 +131,46 @@ export default function AdminPanelPage() {
     status: 'draft' as Invoice['status'],
     items: [{ description: '', amount: 0 }],
   });
+  const [approvalQueue, setApprovalQueue] = useState([
+    {
+      id: 'REQ-204',
+      title: 'Refund request: Hosting Bundle',
+      requester: 'Elena West',
+      type: 'Refund',
+      priority: 'High',
+      status: 'pending',
+    },
+    {
+      id: 'REQ-207',
+      title: 'New vendor payout',
+      requester: 'Marcus Lee',
+      type: 'Finance',
+      priority: 'Medium',
+      status: 'review',
+    },
+    {
+      id: 'REQ-213',
+      title: 'Portfolio feature request',
+      requester: 'Talia Nguyen',
+      type: 'Content',
+      priority: 'Low',
+      status: 'approved',
+    },
+  ]);
+  const [maintenanceTasks, setMaintenanceTasks] = useState([
+    { id: 'task-1', title: 'Rotate API keys', owner: 'Security', due: 'Aug 18', completed: false },
+    { id: 'task-2', title: 'QA upcoming release', owner: 'Product', due: 'Aug 21', completed: false },
+    { id: 'task-3', title: 'Archive inactive subscriptions', owner: 'Billing', due: 'Aug 24', completed: true },
+  ]);
+  const [broadcastDraft, setBroadcastDraft] = useState({
+    title: '',
+    audience: 'All customers',
+    message: '',
+  });
+  const [broadcasts, setBroadcasts] = useState([
+    { id: 'ANN-12', title: 'August maintenance window', audience: 'All customers', sentAt: 'Aug 10, 9:00 AM' },
+    { id: 'ANN-13', title: 'New analytics dashboard', audience: 'Pro customers', sentAt: 'Aug 12, 4:30 PM' },
+  ]);
 
   const { user } = useAuthStore();
   
@@ -370,6 +425,15 @@ export default function AdminPanelPage() {
     ];
   }, [categories.length, portfolioItems.length, products.length, staff.length]);
 
+  const securityAlerts = useMemo(
+    () => [
+      { id: 'alert-1', title: 'Multiple failed logins blocked', time: '12 minutes ago', status: 'review' },
+      { id: 'alert-2', title: 'New admin API key issued', time: '1 hour ago', status: 'approved' },
+      { id: 'alert-3', title: 'Suspicious IP flagged for review', time: 'Yesterday', status: 'pending' },
+    ],
+    []
+  );
+
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-purple-50 pt-24 pb-16 flex justify-center">
@@ -501,6 +565,34 @@ export default function AdminPanelPage() {
     );
   }, [hasSearch, normalizedQuery, invoices]);
 
+  const filteredApprovalQueue = useMemo(() => {
+    if (!hasSearch) return approvalQueue;
+    return approvalQueue.filter((request) =>
+      [
+        request.id,
+        request.title,
+        request.requester,
+        request.type,
+        request.priority,
+        request.status,
+      ].some(matchesQuery)
+    );
+  }, [approvalQueue, hasSearch, matchesQuery]);
+
+  const filteredMaintenanceTasks = useMemo(() => {
+    if (!hasSearch) return maintenanceTasks;
+    return maintenanceTasks.filter((task) =>
+      [task.title, task.owner, task.due].some(matchesQuery)
+    );
+  }, [hasSearch, maintenanceTasks, matchesQuery]);
+
+  const filteredBroadcasts = useMemo(() => {
+    if (!hasSearch) return broadcasts;
+    return broadcasts.filter((announcement) =>
+      [announcement.title, announcement.audience, announcement.sentAt].some(matchesQuery)
+    );
+  }, [broadcasts, hasSearch, matchesQuery]);
+
   const allowReorder = !hasSearch;
 
   const searchPlaceholder = useMemo(() => {
@@ -519,6 +611,8 @@ export default function AdminPanelPage() {
         return 'Search staff...';
       case 'billing':
         return 'Search purchases and invoices...';
+      case 'operations':
+        return 'Search approvals and tasks...';
       default:
         return 'Search...';
     }
@@ -533,6 +627,7 @@ export default function AdminPanelPage() {
     { id: 'users' as TabType, label: 'Users', icon: Users },
     { id: 'staff' as TabType, label: 'Staff', icon: UserCog },
     { id: 'billing' as TabType, label: 'Billing', icon: CreditCard },
+    { id: 'operations' as TabType, label: 'Operations', icon: ClipboardList },
     { id: 'settings' as TabType, label: 'Settings', icon: Settings },
   ];
 
@@ -540,10 +635,13 @@ export default function AdminPanelPage() {
   const statusConfig: Record<string, { color: string; icon: typeof CheckCircle }> = {
     completed: { color: 'text-green-600 bg-green-50', icon: CheckCircle },
     operational: { color: 'text-green-600 bg-green-50', icon: CheckCircle },
+    approved: { color: 'text-green-600 bg-green-50', icon: CheckCircle },
     processing: { color: 'text-blue-600 bg-blue-50', icon: RefreshCw },
+    review: { color: 'text-blue-600 bg-blue-50', icon: RefreshCw },
     pending: { color: 'text-yellow-600 bg-yellow-50', icon: AlertCircle },
     degraded: { color: 'text-yellow-600 bg-yellow-50', icon: AlertCircle },
     failed: { color: 'text-red-600 bg-red-50', icon: XCircle },
+    rejected: { color: 'text-red-600 bg-red-50', icon: XCircle },
   };
 
   const defaultStatusConfig = { color: 'text-gray-600 bg-gray-50', icon: Clock };
@@ -589,6 +687,30 @@ export default function AdminPanelPage() {
     downloadFile('store-report.txt', report);
   };
 
+  const canSendBroadcast = broadcastDraft.title.trim().length > 0 && broadcastDraft.message.trim().length > 0;
+
+  const handleSendBroadcast = () => {
+    if (!canSendBroadcast) return;
+    const timestamp = new Date();
+    const formattedTime = timestamp.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+
+    setBroadcasts((prev) => [
+      {
+        id: `ANN-${timestamp.getTime()}`,
+        title: broadcastDraft.title.trim(),
+        audience: broadcastDraft.audience,
+        sentAt: formattedTime,
+      },
+      ...prev,
+    ]);
+    setBroadcastDraft({ title: '', audience: broadcastDraft.audience, message: '' });
+  };
+
   const handleRefresh = () => {
     setLastRefresh(new Date());
     setSearchQuery('');
@@ -596,72 +718,74 @@ export default function AdminPanelPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 pt-20">
-      <div className="flex">
+    <div className="min-h-screen bg-gray-100 pt-24">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 pb-16 lg:flex-row lg:items-start">
         {/* Sidebar */}
-        <aside className="fixed left-0 top-20 h-[calc(100vh-5rem)] w-64 bg-white border-r border-gray-200 z-40">
-          <div className="p-6">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center">
-                <Shield size={20} className="text-white" />
+        <aside className="w-full lg:w-64 lg:sticky lg:top-24 lg:h-[calc(100vh-6rem)] lg:self-start">
+          <div className="flex h-full flex-col rounded-2xl bg-white border border-gray-200 shadow-sm">
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center">
+                  <Shield size={20} className="text-white" />
+                </div>
+                <div>
+                  <h2 className="font-bold text-gray-900">Admin Panel</h2>
+                  <p className="text-xs text-gray-500">v2.0 Advanced</p>
+                </div>
               </div>
-              <div>
-                <h2 className="font-bold text-gray-900">Admin Panel</h2>
-                <p className="text-xs text-gray-500">v2.0 Advanced</p>
-              </div>
+
+              <nav className="space-y-1">
+                {sidebarItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                      activeTab === item.id
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-lg shadow-purple-500/25'
+                        : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    <item.icon size={20} />
+                    {item.label}
+                  </button>
+                ))}
+              </nav>
             </div>
 
-            <nav className="space-y-1">
-              {sidebarItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                    activeTab === item.id
-                      ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-lg shadow-purple-500/25'
-                      : 'text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  <item.icon size={20} />
-                  {item.label}
-                </button>
-              ))}
-            </nav>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="absolute bottom-6 left-6 right-6">
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-100">
-              <div className="flex items-center gap-2 text-purple-700 font-semibold mb-2">
-                <Zap size={16} />
-                Quick Actions
-              </div>
-              <div className="space-y-2">
-                <button
-                  type="button"
-                  onClick={handleGenerateReport}
-                  className="w-full text-left text-sm text-gray-600 hover:text-purple-600 flex items-center gap-2 py-1"
-                >
-                  <FileText size={14} />
-                  Generate Report
-                </button>
-                <button
-                  type="button"
-                  onClick={handleExportData}
-                  className="w-full text-left text-sm text-gray-600 hover:text-purple-600 flex items-center gap-2 py-1"
-                >
-                  <Download size={14} />
-                  Export Data
-                </button>
+            {/* Quick Actions */}
+            <div className="mt-auto p-6 pt-0">
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-100">
+                <div className="flex items-center gap-2 text-purple-700 font-semibold mb-2">
+                  <Zap size={16} />
+                  Quick Actions
+                </div>
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={handleGenerateReport}
+                    className="w-full text-left text-sm text-gray-600 hover:text-purple-600 flex items-center gap-2 py-1"
+                  >
+                    <FileText size={14} />
+                    Generate Report
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleExportData}
+                    className="w-full text-left text-sm text-gray-600 hover:text-purple-600 flex items-center gap-2 py-1"
+                  >
+                    <Download size={14} />
+                    Export Data
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 ml-64 p-8">
+        <main className="flex-1 space-y-8">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 capitalize">{activeTab}</h1>
               <p className="text-gray-500 text-sm mt-1">
@@ -671,6 +795,7 @@ export default function AdminPanelPage() {
                 {activeTab === 'analytics' && 'Detailed insights into your store performance.'}
                 {activeTab === 'users' && 'Manage user accounts and permissions.'}
                 {activeTab === 'billing' && 'Create invoices and review customer purchase activity.'}
+                {activeTab === 'operations' && 'Handle approvals, maintenance, and broadcast updates.'}
                 {activeTab === 'settings' && 'Configure your store settings and preferences.'}
               </p>
             </div>
@@ -1515,6 +1640,220 @@ export default function AdminPanelPage() {
                         </div>
                       ))
                     )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Operations Tab */}
+          {activeTab === 'operations' && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 xl:col-span-2">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-2">
+                      <ClipboardList size={18} className="text-purple-600" />
+                      <h3 className="font-semibold text-gray-900">Approval Queue</h3>
+                    </div>
+                    <span className="text-xs text-gray-500">{filteredApprovalQueue.length} requests</span>
+                  </div>
+                  <div className="space-y-3">
+                    {filteredApprovalQueue.length === 0 ? (
+                      <div className="py-10 text-center text-gray-500 bg-gray-50 rounded-xl">
+                        {hasSearch ? 'No approvals match your search.' : 'No approvals in the queue.'}
+                      </div>
+                    ) : (
+                      filteredApprovalQueue.map((request) => {
+                        const StatusIcon = getStatusIcon(request.status);
+                        const isResolved = request.status === 'approved' || request.status === 'rejected';
+                        return (
+                          <div
+                            key={request.id}
+                            className="flex flex-col gap-4 rounded-xl border border-gray-100 p-4 md:flex-row md:items-center md:justify-between"
+                          >
+                            <div className="flex items-start gap-4">
+                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${getStatusColor(request.status)}`}>
+                                <StatusIcon size={18} />
+                              </div>
+                              <div>
+                                <p className="font-medium text-gray-900">{request.title}</p>
+                                <p className="text-xs text-gray-500">
+                                  {request.requester} • {request.type}
+                                </p>
+                                <p className="text-xs text-gray-400">Priority: {request.priority}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(request.status)}`}>
+                                {request.status}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setApprovalQueue((prev) =>
+                                    prev.map((item) => (item.id === request.id ? { ...item, status: 'approved' } : item))
+                                  )
+                                }
+                                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-green-50 text-green-700 hover:bg-green-100 disabled:opacity-50"
+                                disabled={isResolved}
+                              >
+                                Approve
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setApprovalQueue((prev) =>
+                                    prev.map((item) => (item.id === request.id ? { ...item, status: 'rejected' } : item))
+                                  )
+                                }
+                                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-700 hover:bg-red-100 disabled:opacity-50"
+                                disabled={isResolved}
+                              >
+                                Reject
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-2">
+                      <ShieldAlert size={18} className="text-purple-600" />
+                      <h3 className="font-semibold text-gray-900">Security Watch</h3>
+                    </div>
+                    <span className="text-xs text-gray-500">{securityAlerts.length} alerts</span>
+                  </div>
+                  <div className="space-y-4">
+                    {securityAlerts.map((alert) => {
+                      const StatusIcon = getStatusIcon(alert.status);
+                      return (
+                        <div key={alert.id} className="flex items-start gap-3">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${getStatusColor(alert.status)}`}>
+                            <StatusIcon size={16} />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">{alert.title}</p>
+                            <p className="text-xs text-gray-500">{alert.time}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                  <div className="flex items-center gap-2 mb-6">
+                    <CheckSquare size={18} className="text-purple-600" />
+                    <h3 className="font-semibold text-gray-900">Maintenance Checklist</h3>
+                  </div>
+                  <div className="space-y-3">
+                    {filteredMaintenanceTasks.length === 0 ? (
+                      <div className="py-10 text-center text-gray-500 bg-gray-50 rounded-xl">
+                        {hasSearch ? 'No tasks match your search.' : 'No maintenance tasks scheduled.'}
+                      </div>
+                    ) : (
+                      filteredMaintenanceTasks.map((task) => (
+                        <div
+                          key={task.id}
+                          className="flex items-center justify-between rounded-xl border border-gray-100 p-4"
+                        >
+                          <label className="flex items-center gap-3">
+                            <input
+                              type="checkbox"
+                              checked={task.completed}
+                              onChange={() =>
+                                setMaintenanceTasks((prev) =>
+                                  prev.map((item) =>
+                                    item.id === task.id ? { ...item, completed: !item.completed } : item
+                                  )
+                                )
+                              }
+                              className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                            />
+                            <div>
+                              <p className={`text-sm font-medium ${task.completed ? 'text-gray-400 line-through' : 'text-gray-900'}`}>
+                                {task.title}
+                              </p>
+                              <p className="text-xs text-gray-500">Owner: {task.owner}</p>
+                            </div>
+                          </label>
+                          <span className="text-xs text-gray-400">Due {task.due}</span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                  <div className="flex items-center gap-2 mb-6">
+                    <Megaphone size={18} className="text-purple-600" />
+                    <h3 className="font-semibold text-gray-900">Broadcast Center</h3>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Announcement title</label>
+                      <input
+                        type="text"
+                        value={broadcastDraft.title}
+                        onChange={(event) => setBroadcastDraft((prev) => ({ ...prev, title: event.target.value }))}
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-400"
+                        placeholder="Upcoming maintenance or new feature"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Audience</label>
+                        <select
+                          value={broadcastDraft.audience}
+                          onChange={(event) => setBroadcastDraft((prev) => ({ ...prev, audience: event.target.value }))}
+                          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-400"
+                        >
+                          <option>All customers</option>
+                          <option>Pro customers</option>
+                          <option>Staff only</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                        <textarea
+                          value={broadcastDraft.message}
+                          onChange={(event) => setBroadcastDraft((prev) => ({ ...prev, message: event.target.value }))}
+                          className="w-full h-24 px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-400"
+                          placeholder="Share timing, impact, and next steps."
+                        />
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleSendBroadcast}
+                      className="inline-flex items-center gap-2 px-4 py-2.5 bg-purple-600 text-white text-sm font-semibold rounded-xl shadow-lg shadow-purple-500/25 hover:bg-purple-700 transition disabled:opacity-50"
+                      disabled={!canSendBroadcast}
+                    >
+                      <Megaphone size={16} />
+                      Send update
+                    </button>
+                    <div className="pt-2 space-y-3">
+                      {filteredBroadcasts.length === 0 ? (
+                        <div className="text-sm text-gray-500">No broadcasts yet.</div>
+                      ) : (
+                        filteredBroadcasts.map((announcement) => (
+                          <div key={announcement.id} className="flex items-center justify-between text-sm">
+                            <div>
+                              <p className="font-medium text-gray-900">{announcement.title}</p>
+                              <p className="text-xs text-gray-500">{announcement.audience}</p>
+                            </div>
+                            <span className="text-xs text-gray-400">{announcement.sentAt}</span>
+                          </div>
+                        ))
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
