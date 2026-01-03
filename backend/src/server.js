@@ -7,6 +7,7 @@ import { config } from './config/index.js';
 import productsRoutes from './routes/products.js';
 import contactRoutes from './routes/contact.js';
 import ordersRoutes from './routes/orders.js';
+import authRoutes from './routes/auth.js';
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api', productsRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/orders', ordersRoutes);
+app.use('/api/auth', authRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -85,6 +87,10 @@ Available endpoints:
   POST /api/contact         - Submit contact form
   POST /api/orders          - Submit checkout order
   POST /api/orders/custom   - Submit custom order request
+  POST /api/auth/signup     - Create account
+  POST /api/auth/login      - Login with password
+  POST /api/auth/2fa/verify - Verify 2FA code
+  POST /api/auth/passkey/options - Passkey options
 `);
 });
 

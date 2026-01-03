@@ -1,4 +1,5 @@
 import type { Product, Category, PortfolioItem, TeamMember, Testimonial } from '../types';
+import type { AuthUser } from '../store/authStore';
 
 // API Configuration
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
@@ -139,6 +140,44 @@ export const healthApi = {
   },
 };
 
+// Auth API
+export const authApi = {
+  signup: (data: { name: string; email: string; password: string; twoFactorMethod?: string }) => {
+    return apiFetch<ApiResponse<{
+      user: AuthUser;
+      requiresTwoFactor: boolean;
+      challengeId?: string;
+      twoFactorHint?: string;
+    }>>('/auth/signup', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+  login: (data: { email: string; password: string; mode?: string }) => {
+    return apiFetch<ApiResponse<{
+      user: AuthUser;
+      requiresTwoFactor: boolean;
+      challengeId?: string;
+      twoFactorHint?: string;
+    }>>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+  verifyTwoFactor: (data: { challengeId: string; code: string }) => {
+    return apiFetch<ApiResponse<{ user: AuthUser }>>('/auth/2fa/verify', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+  passkeyOptions: (data?: { email?: string }) => {
+    return apiFetch<ApiResponse<{ passkeyEnabled: boolean; message: string }>>('/auth/passkey/options', {
+      method: 'POST',
+      body: JSON.stringify(data || {}),
+    });
+  },
+};
+
 export default {
   products: productsApi,
   categories: categoriesApi,
@@ -147,5 +186,6 @@ export default {
   testimonials: testimonialsApi,
   contact: contactApi,
   orders: ordersApi,
+  auth: authApi,
   health: healthApi,
 };
