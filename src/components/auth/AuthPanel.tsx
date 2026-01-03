@@ -2,20 +2,29 @@ import { useState } from 'react';
 import { LogIn, UserPlus, ShieldCheck, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAdminStore } from '../../store/adminStore';
-import { useAuthStore } from '../../store/authStore';
+import { useAuthStore, type AuthUser } from '../../store/authStore';
+import { authApi } from '../../services/api';
 
 type AuthMode = 'admin' | 'customer';
-
-const generateId = () => (crypto.randomUUID ? crypto.randomUUID().split('-')[0] : Math.random().toString(36).substring(2, 9));
 
 export function AuthPanel({ mode }: { mode: AuthMode }) {
   const [isSignup, setIsSignup] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [twoFactorMethod, setTwoFactorMethod] = useState('authenticator');
+  const [passkeyNotice, setPasskeyNotice] = useState('');
+  const [twoFactorCode, setTwoFactorCode] = useState('');
+  const [twoFactorChallengeId, setTwoFactorChallengeId] = useState('');
+  const [twoFactorHint, setTwoFactorHint] = useState('');
+  const [pendingUser, setPendingUser] = useState<AuthUser | null>(null);
+  const [statusMessage, setStatusMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { login } = useAuthStore();
-  const { users, staff, addUser } = useAdminStore();
+  const { addUser } = useAdminStore();
   const isAdminMode = mode === 'admin';
 
   const modeTitle = isAdminMode ? 'Admin Access' : 'Customer Portal';
@@ -23,15 +32,46 @@ export function AuthPanel({ mode }: { mode: AuthMode }) {
     ? 'Sign in with the primary admin account to manage the store.'
     : 'Log in or create an account to view your purchases and invoices.';
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const resetTwoFactor = () => {
+    setTwoFactorChallengeId('');
+    setTwoFactorCode('');
+    setTwoFactorHint('');
+    setPendingUser(null);
+  };
+
+  const handlePasskey = async () => {
+    setPasskeyNotice('');
+    setError('');
+    setStatusMessage('');
+
+    try {
+      setIsSubmitting(true);
+      const response = await authApi.passkeyOptions({ email: email.trim() || undefined });
+      setPasskeyNotice(response.data.message);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unable to load passkey options.';
+      setPasskeyNotice(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError('');
+    setStatusMessage('');
 
     const trimmedEmail = email.trim().toLowerCase();
     const trimmedName = name.trim();
+    const trimmedPassword = password.trim();
 
     if (!trimmedEmail) {
       setError('Please enter a valid email address.');
+      return;
+    }
+
+    if (!trimmedPassword) {
+      setError('Please enter your password to continue.');
       return;
     }
 
@@ -46,36 +86,103 @@ export function AuthPanel({ mode }: { mode: AuthMode }) {
         return;
       }
 
-      addUser({
-        name: trimmedName,
-        email: trimmedEmail,
-        status: 'active',
-        role: 'customer',
-        lastActive: 'Now',
-      });
-      login({ id: generateId(), name: trimmedName, email: trimmedEmail, role: 'customer' });
-      navigate('/account');
-      return;
-    }
-
-    if (isAdminMode) {
-      const adminMatch = staff.find((member) => member.email.toLowerCase() === trimmedEmail && member.role === 'admin');
-      if (!adminMatch) {
-        setError('This email does not have admin access. Use the primary admin account.');
+      if (trimmedPassword.length < 8) {
+        setError('Create a password with at least 8 characters.');
         return;
       }
-      login({ id: adminMatch.id, name: adminMatch.name, email: adminMatch.email, role: adminMatch.role });
-      navigate('/admin/panel');
+
+      if (trimmedPassword !== confirmPassword.trim()) {
+        setError('Passwords do not match. Please re-enter them.');
+        return;
+      }
+
+      try {
+        setIsSubmitting(true);
+        const response = await authApi.signup({
+          name: trimmedName,
+          email: trimmedEmail,
+          password: trimmedPassword,
+          twoFactorMethod,
+        });
+        const { user, requiresTwoFactor, challengeId, twoFactorHint: hint } = response.data;
+        addUser({
+          name: user.name,
+          email: user.email,
+          status: 'active',
+          role: 'customer',
+          lastActive: 'Now',
+        });
+
+        if (requiresTwoFactor && challengeId) {
+          setPendingUser(user);
+          setTwoFactorChallengeId(challengeId);
+          setTwoFactorHint(hint || '');
+          setStatusMessage('Enter the 2FA code to finish creating your account.');
+          return;
+        }
+
+        login(user);
+        navigate('/account');
+        return;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unable to create account.');
+        return;
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+
+    try {
+      setIsSubmitting(true);
+      const response = await authApi.login({
+        email: trimmedEmail,
+        password: trimmedPassword,
+        mode,
+      });
+      const { user, requiresTwoFactor, challengeId, twoFactorHint: hint } = response.data;
+
+      if (requiresTwoFactor && challengeId) {
+        setPendingUser(user);
+        setTwoFactorChallengeId(challengeId);
+        setTwoFactorHint(hint || '');
+        setStatusMessage('Enter the 2FA code to finish signing in.');
+        return;
+      }
+
+      login(user);
+      navigate(isAdminMode ? '/admin/panel' : '/account');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to sign in.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleTwoFactorSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError('');
+    setStatusMessage('');
+
+    if (!twoFactorCode.trim()) {
+      setError('Enter the 2FA code to continue.');
       return;
     }
 
-    const userMatch = users.find((user) => user.email.toLowerCase() === trimmedEmail);
-    if (!userMatch) {
-      setError('No customer account found. Please sign up to continue.');
-      return;
+    try {
+      setIsSubmitting(true);
+      const response = await authApi.verifyTwoFactor({
+        challengeId: twoFactorChallengeId,
+        code: twoFactorCode.trim(),
+      });
+      const user = response.data.user;
+      login(user);
+      resetTwoFactor();
+      navigate(user.role === 'admin' ? '/admin/panel' : '/account');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to verify code.');
+    } finally {
+      setIsSubmitting(false);
     }
-    login({ id: userMatch.id, name: userMatch.name, email: userMatch.email, role: userMatch.role });
-    navigate('/account');
   };
 
   return (
@@ -96,7 +203,12 @@ export function AuthPanel({ mode }: { mode: AuthMode }) {
           <div className="flex gap-3 mb-6">
             <button
               type="button"
-              onClick={() => { setIsSignup(false); setError(''); }}
+              onClick={() => {
+                setIsSignup(false);
+                setError('');
+                setStatusMessage('');
+                resetTwoFactor();
+              }}
               className={`flex-1 py-2 rounded-xl text-sm font-semibold border transition ${
                 !isSignup ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-200'
               }`}
@@ -108,7 +220,12 @@ export function AuthPanel({ mode }: { mode: AuthMode }) {
             </button>
             <button
               type="button"
-              onClick={() => { setIsSignup(true); setError(''); }}
+              onClick={() => {
+                setIsSignup(true);
+                setError('');
+                setStatusMessage('');
+                resetTwoFactor();
+              }}
               className={`flex-1 py-2 rounded-xl text-sm font-semibold border transition ${
                 isSignup ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-200'
               }`}
@@ -146,6 +263,82 @@ export function AuthPanel({ mode }: { mode: AuthMode }) {
             />
           </div>
 
+          <div>
+            <label className="text-sm font-medium text-gray-700">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              className="mt-2 w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100 bg-white/80"
+              placeholder="Enter your password"
+              autoComplete={isSignup ? 'new-password' : 'current-password'}
+            />
+          </div>
+
+          {isSignup && (
+            <div>
+              <label className="text-sm font-medium text-gray-700">Confirm password</label>
+              <input
+              type="password"
+              value={confirmPassword}
+              onChange={(event) => setConfirmPassword(event.target.value)}
+              className="mt-2 w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100 bg-white/80"
+              placeholder="Re-enter your password"
+              autoComplete="new-password"
+            />
+          </div>
+          )}
+
+          <div className="rounded-2xl border border-purple-100 bg-purple-50/60 px-4 py-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold text-purple-900">Passkey sign-in</p>
+                <p className="text-xs text-purple-600">Use Touch ID, Face ID, or a security key instead of typing a password.</p>
+              </div>
+              <button
+                type="button"
+                onClick={handlePasskey}
+                disabled={isSubmitting}
+                className="px-3 py-2 rounded-lg bg-white text-purple-700 text-xs font-semibold border border-purple-200 hover:border-purple-300 transition"
+              >
+                Use passkey
+              </button>
+            </div>
+            {passkeyNotice && (
+              <p className="mt-2 text-xs text-purple-700">{passkeyNotice}</p>
+            )}
+          </div>
+
+          <div className="rounded-2xl border border-gray-100 bg-gray-50/70 px-4 py-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Two-factor authentication</p>
+                <p className="text-xs text-gray-500">Add a second step for secure logins.</p>
+              </div>
+              <select
+                value={twoFactorMethod}
+                onChange={(event) => setTwoFactorMethod(event.target.value)}
+                className="text-xs font-semibold rounded-lg border border-gray-200 bg-white px-2 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-100"
+                aria-label="Select two-factor authentication method"
+              >
+                <option value="authenticator">Authenticator app</option>
+                <option value="sms">SMS code</option>
+                <option value="email">Email code</option>
+              </select>
+            </div>
+            <p className="mt-2 text-xs text-gray-500">
+              {isSignup
+                ? `We'll enable ${twoFactorMethod.replace('-', ' ')} codes for this account.`
+                : 'We will use your saved 2FA method after you sign in.'}
+            </p>
+          </div>
+
+          {statusMessage && (
+            <div className="text-sm text-purple-700 bg-purple-50 border border-purple-100 rounded-xl px-4 py-3">
+              {statusMessage}
+            </div>
+          )}
+
           {error && (
             <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
               {error}
@@ -154,15 +347,42 @@ export function AuthPanel({ mode }: { mode: AuthMode }) {
 
           <button
             type="submit"
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold shadow-lg shadow-purple-500/25 hover:from-purple-700 hover:to-pink-600 transition"
+            disabled={isSubmitting}
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold shadow-lg shadow-purple-500/25 hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {isSignup ? 'Create account' : 'Continue'}
+            {isSubmitting ? 'Working...' : isSignup ? 'Create account' : 'Continue'}
           </button>
         </form>
+
+        {twoFactorChallengeId ? (
+          <form className="mt-5 space-y-3" onSubmit={handleTwoFactorSubmit}>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Two-factor code</label>
+              <input
+                type="text"
+                value={twoFactorCode}
+                onChange={(event) => setTwoFactorCode(event.target.value)}
+                className="mt-2 w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100 bg-white/80"
+                placeholder="Enter 6-digit code"
+              />
+              {twoFactorHint && (
+                <p className="mt-2 text-xs text-gray-500">{twoFactorHint}</p>
+              )}
+            </div>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-3 rounded-xl border border-purple-200 bg-white text-purple-700 font-semibold shadow-sm hover:border-purple-300 transition disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? 'Verifying...' : 'Verify code'}
+            </button>
+          </form>
+        ) : null}
 
         {isAdminMode ? (
           <div className="mt-6 rounded-2xl border border-purple-100 bg-purple-50/70 px-4 py-3 text-xs text-purple-700">
             Primary admin login: <span className="font-semibold text-purple-900">john@academystudios.com</span>
+            <span className="block text-purple-600 mt-1">Demo password: AdminPass123! · 2FA code: 123456.</span>
             <span className="block text-purple-600 mt-1">Only the primary admin can grant staff access.</span>
           </div>
         ) : null}
